@@ -87,143 +87,42 @@ def separate_binomial_name(tax_line):
         pass
     return tax_line
 
-# def upload_new_taxonomy(key, value, time_stamps_ids):
-#     # print time_stamps_ids
-#     # print key
-#     # print value
-#     sql_taxonomies = ""
-#     for rank, taxon in value.items():
-#         sql_taxa = ""
-#         # todo: create all values once: VALUES ("%s", "%s"), ("%s", "%s")...
-#         sql_taxa       = 'INSERT IGNORE INTO taxa_temp (taxon, rank) VALUES ("%s", "%s")' % (taxon, rank)
-#         {'superkingdom': 'Archaea', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei'}
-#         print "sql_taxa = %s" % sql_taxa
-#         shared.my_conn.execute_no_fetch(sql_taxa)    
-#     
-#     # print "value[\"orderx\"] = %s" % value["orderx"]
-#     superkingdom = "" 
-#     phylum       = "" 
-#     classx       = "" 
-#     orderx       = "" 
-#     family       = "" 
-#     genus        = "" 
-#     species      = "" 
-#     strain       = "" 
-#         
-#     try:
-#         superkingdom = value["superkingdom"] 
-#     except:    
-#         pass
-#     try:
-#         phylum       = value["phylum"] 
-#     except:    
-#         pass
-#     try:
-#         classx       = value["class"] 
-#     except:    
-#         pass
-#     try:
-#         orderx       = value["orderx"] 
-#     except:    
-#         pass
-#     try:
-#         family       = value["family"] 
-#     except:    
-#         pass
-#     try:
-#         genus        = value["genus"] 
-#     except:    
-#         pass
-#     try:
-#         species      = value["species"] 
-#     except:    
-#         pass
-#     try:
-#         strain       = value["strain"] 
-#     except:    
-#         pass
-#         
-#     sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, superkingdom, phylum, classx, orderx, family, genus, species, strain, time_stamps_ids[0], time_stamps_ids[1])
-#     print "sql_taxonomies = %s" % sql_taxonomies
-#     shared.my_conn.execute_no_fetch(sql_taxonomies)    
-#     
-    
 def upload_taxa(value):
     for rank, taxon in value.items():
         sql_taxa = ""
         # todo: create all values once: VALUES ("%s", "%s"), ("%s", "%s")...
         sql_taxa       = 'INSERT IGNORE INTO taxa_temp (taxon, rank) VALUES ("%s", "%s")' % (taxon, rank)
         {'superkingdom': 'Archaea', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei'}
-        print "sql_taxa = %s" % sql_taxa
+        # print "sql_taxa = %s" % sql_taxa
         shared.my_conn.execute_no_fetch(sql_taxa)    
     
-def upload_new_taxonomy(ordered_names, key, value, time_stamps_ids):
-    print time_stamps_ids
-    print key
-    print value
-    sql_taxonomies = ""
-    upload_taxa(value)
+def make_empty_taxa(ordered_names, my_dict):
     for name in ordered_names:
-        if name not in value.keys():
-            value[name] = ""
-            
-    print "value = %s" % value
-            
-        # 
-        # upload_values = '(%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, value[name], phylum, classx, orderx, family, genus, species, strain, time_stamps_ids[0], time_stamps_ids[1])
-        # 
-        # 
-        # sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, superkingdom, phylum, classx, orderx, family, genus, species, strain, time_stamps_ids[0], time_stamps_ids[1])
-        # print "sql_taxonomies = %s" % sql_taxonomies
-        # shared.my_conn.execute_no_fetch(sql_taxonomies)
+        if name not in my_dict.keys():
+            my_dict[name] = ""
+    return my_dict
         
-    
-    # print "value[\"orderx\"] = %s" % value["orderx"]
-    # superkingdom = "" 
-    # phylum       = "" 
-    # classx       = "" 
-    # orderx       = "" 
-    # family       = "" 
-    # genus        = "" 
-    # species      = "" 
-    # strain       = "" 
-    #     
-    # try:
-    #     superkingdom = value["superkingdom"] 
-    # except:    
-    #     pass
-    # try:
-    #     phylum       = value["phylum"] 
-    # except:    
-    #     pass
-    # try:
-    #     classx       = value["class"] 
-    # except:    
-    #     pass
-    # try:
-    #     orderx       = value["orderx"] 
-    # except:    
-    #     pass
-    # try:
-    #     family       = value["family"] 
-    # except:    
-    #     pass
-    # try:
-    #     genus        = value["genus"] 
-    # except:    
-    #     pass
-    # try:
-    #     species      = value["species"] 
-    # except:    
-    #     pass
-    # try:
-    #     strain       = value["strain"] 
-    # except:    
-    #     pass
-    #     
-    # sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, superkingdom, phylum, classx, orderx, family, genus, species, strain, time_stamps_ids[0], time_stamps_ids[1])
+def upload_new_taxonomy(ordered_names, key, value, time_stamps_ids):
+    # print time_stamps_ids
+    # print key
+    # print value
+    upload_taxa(value)
+    my_dict = make_empty_taxa(ordered_names, value)
+            
+    sql_taxonomies = ""
+    sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, my_dict["superkingdom"], my_dict["phylum"], my_dict["class"], my_dict["orderx"], my_dict["family"], my_dict["genus"], my_dict["species"], my_dict["strain"], time_stamps_ids[0], time_stamps_ids[1])
     # print "sql_taxonomies = %s" % sql_taxonomies
-    # shared.my_conn.execute_no_fetch(sql_taxonomies)
+    shared.my_conn.execute_no_fetch(sql_taxonomies)    
+
+
+def update_taxa_ranks_ids():
+    sql = """
+        UPDATE taxa_temp
+        JOIN ranks USING(rank)
+        SET taxa_temp.rank_id = ranks.id
+    """
+    shared.my_conn.execute_no_fetch(sql)    
+    
 
 def update_taxonomies_sep_ids(ordered_names):
     for name in ordered_names:
@@ -232,7 +131,7 @@ def update_taxonomies_sep_ids(ordered_names):
             JOIN taxa_temp ON(taxon = %s) AND rank = "%s"
             SET taxonomies_sep.%s_id = taxa_temp.id    
         """ % (name, name, name)
-        print sql
+        # print sql
         shared.my_conn.execute_no_fetch(sql)    
 
 def process(args):
@@ -247,20 +146,16 @@ def process(args):
     for tax_id, tax_line in old_taxonomy.items():
         # print "tax_id = %s, tax_line = %s" % (tax_id, tax_line)
         separated_species_taxonomy[tax_id] = separate_binomial_name(tax_line)
-    print "separated_species_taxonomy" 
-    print separated_species_taxonomy
+    # print "separated_species_taxonomy" 
+    # print separated_species_taxonomy
     taxonomy_with_wholes = remove_empty_and_bad(separated_species_taxonomy, bad_value)
-    print "taxonomy_with_wholes" 
-    print taxonomy_with_wholes
+    # print "taxonomy_with_wholes" 
+    # print taxonomy_with_wholes
     
     for key, value in taxonomy_with_wholes.items():
         upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
+    update_taxa_ranks_ids()    
     update_taxonomies_sep_ids(ordered_names)
-    # for tax_id, tax_line in taxonomy_with_wholes.items():    
-    #     tax_line_w_k_ph = make_kingdom_phylum(tax_line, bad_value)        
-    #     taxout_fh.write(change_id(tax_id) + "\t"  + make_new_taxonomy(tax_line_w_k_ph, ordered_names) + "\t" + "1" + "\n")
-
-
  
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
