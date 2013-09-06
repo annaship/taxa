@@ -78,28 +78,26 @@ def remove_bad(tax_line, name, bad_value):
 def remove_empty(tax_line):
     return dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
 
+def get_dups(new_tax_line, taxonomy_no_dup, tax_id, dup_ids):
+    if new_tax_line in taxonomy_no_dup.values():
+        [dup_ids[key].append(tax_id) for key in taxonomy_no_dup.keys() if (taxonomy_no_dup[key] == new_tax_line)]
+    else:
+        taxonomy_no_dup[tax_id] = new_tax_line
+    return taxonomy_no_dup, dup_ids
+    
 def remove_empty_and_get_dups(taxonomy_with_wholes):
     taxonomy_no_dup = {}
     dup_ids         = {}
-    print "taxonomy_with_wholes = %s" % taxonomy_with_wholes
     for tax_id, tax_line in taxonomy_with_wholes.items():    
         if tax_id not in dup_ids.keys():
             dup_ids[tax_id] = []    
         new_tax_line = {}
         rank_name    = "" 
         taxon        = ""
-        print "=================="
-        print "tax_id = %s" % tax_id
         new_tax_line = remove_empty(tax_line)
-        # new_tax_line = dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
-        print "new_tax_line = %s" % new_tax_line
-        if new_tax_line in taxonomy_no_dup.values():
-            [dup_ids[key].append(tax_id) for key in taxonomy_no_dup.keys() if (taxonomy_no_dup[key] == new_tax_line)]
-        else:
-            taxonomy_no_dup[tax_id] = new_tax_line
-    print "dup_ids = %s" % dup_ids
+        taxonomy_no_dup, dup_ids = get_dups(new_tax_line, taxonomy_no_dup, tax_id, dup_ids)
+    print dup_ids
 
-            
 def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
     taxonomy_with_wholes = {}
     ordered_names_from_phylum = ordered_names[1:] #no superkingdom
