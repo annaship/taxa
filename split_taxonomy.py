@@ -39,13 +39,7 @@
 import argparse
 import sql_tables_class
 import shared
-
-def uniq_array(arr): 
-   # order preserving
-   noDupes = []
-   [noDupes.append(i) for i in arr if not noDupes.count(i)]
-   return noDupes
-   
+ 
 def make_taxa_dict(tax_infile, ordered_names):
     taxonomy       = {}
     time_stamps_ids = {}
@@ -166,6 +160,19 @@ def update_taxonomies_sep_ids(ordered_names):
         # print sql
         shared.my_conn.execute_no_fetch(sql)    
 
+def update_sequence_uniq_infos(dup_ids):
+    # dup_ids = {'41': [], '1': [], '91': [], '3': [], '2': [], '5': ['81'], '4': [], '7': ['6', '8'], '6': [], '9': [], '8': [], '81': []}
+    
+    sql = """
+        SELECT * FROM sequence_uniq_infos
+        WHERE taxonomy_id in (%s)
+    """ % ", ".join(dup_ids.keys())
+    # print sql
+    res = shared.my_conn.execute_fetch_select(sql)    
+    print res
+    # for 
+
+
 def process(args):
     tax_infile    = args.tax_infile
     ordered_names = "superkingdom", "phylum", "class", "orderx", "family", "genus", "species", "strain"
@@ -188,6 +195,7 @@ def process(args):
         upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
     update_taxa_ranks_ids()    
     update_taxonomies_sep_ids(ordered_names)
+    update_sequence_uniq_infos(dup_ids)
  
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
