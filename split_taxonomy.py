@@ -75,6 +75,9 @@ def remove_bad(tax_line, name, bad_value):
         tax_line[name] = ''
     return tax_line[name]
 
+def remove_empty(tax_line):
+    return dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
+
 def remove_empty_and_get_dups(taxonomy_with_wholes):
     taxonomy_no_dup = {}
     dup_ids         = {}
@@ -87,13 +90,11 @@ def remove_empty_and_get_dups(taxonomy_with_wholes):
         taxon        = ""
         print "=================="
         print "tax_id = %s" % tax_id
-        new_tax_line = dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
+        new_tax_line = remove_empty(tax_line)
+        # new_tax_line = dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
         print "new_tax_line = %s" % new_tax_line
         if new_tax_line in taxonomy_no_dup.values():
-            for key in taxonomy_no_dup.keys():
-                if taxonomy_no_dup[key] == new_tax_line:
-                    print "exist key = %s" % key
-                    dup_ids[key].append(tax_id)
+            [dup_ids[key].append(tax_id) for key in taxonomy_no_dup.keys() if (taxonomy_no_dup[key] == new_tax_line)]
         else:
             taxonomy_no_dup[tax_id] = new_tax_line
     print "dup_ids = %s" % dup_ids
