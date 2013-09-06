@@ -62,7 +62,7 @@ def make_taxa_dict(tax_infile, ordered_names):
             line           = line.strip()
             tax_line_split = line.split(",")
             id_tax         = tax_line_split[0]
-            time_stamps     = tax_line_split[2:]
+            time_stamps    = tax_line_split[2:]
             # print time_stamps
             split_tax      = tax_line_split[1].strip('"').split(';')
         
@@ -72,23 +72,31 @@ def make_taxa_dict(tax_infile, ordered_names):
             
 def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
     taxonomy_with_wholes = {}
+    new_taxonomy_value   = {}
+    taxonomy_dup         = {}
     print "old_taxonomy = %s" % old_taxonomy
     for key_id, taxonomy_value in old_taxonomy.items():
         for rank_name in ordered_names:
-            print "key_id = %s, taxonomy_value = %s" % (key_id, taxa_value)
             print "rank_name = %s" % rank_name
-    # taxonomy_with_wholes = dict((tax_id, dict((k1, v1) for k1, v1 in v.iteritems() if ((v1 != "") and (v1 not in bad_value)) else ))  for tax_id, v in old_taxonomy.iteritems())
-    # print taxonomy_with_wholes
+            if ((taxonomy_value[rank_name] != "") and (taxonomy_value[rank_name] not in bad_value)):
+                new_taxonomy_value[rank_name] = taxonomy_value[rank_name]
+                print "new_taxonomy_value[rank_name] = %s" % (new_taxonomy_value[rank_name])
+        taxonomy_with_wholes[key_id] = new_taxonomy_value
+            
+    # taxonomy_with_wholes = dict((tax_id, dict((k1, v1) for k1, v1 in v.iteritems() if ((v1 != "") and (v1 not in bad_value)) ))  for tax_id, v in old_taxonomy.iteritems())
+    print taxonomy_with_wholes
     return taxonomy_with_wholes
 
 def separate_binomial_name(tax_line):
+    species = ""
+    genus   = ""
     # uncultured_species(tax_line["species"])
     try: 
         if (tax_line["species"].find(" ") > 0):
             species = tax_line["species"].split(" ")
             genus   = tax_line["genus"]
             if (species[0] == genus):
-                tax_line["species"] = species[1]
+                tax_line["species"] = (" ").join(species[1:])
     except:
         pass
     return tax_line
