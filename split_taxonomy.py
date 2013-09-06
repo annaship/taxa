@@ -96,18 +96,16 @@ def remove_empty_and_get_dups(taxonomy_with_wholes):
         taxon        = ""
         new_tax_line = remove_empty(tax_line)
         taxonomy_no_dup, dup_ids = get_dups(new_tax_line, taxonomy_no_dup, tax_id, dup_ids)
-    print dup_ids
+    return taxonomy_no_dup, dup_ids
 
-def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
+def remove_bad_from_end(old_taxonomy, bad_value, ordered_names):
     taxonomy_with_wholes = {}
-    ordered_names_from_phylum = ordered_names[1:] #no superkingdom
     for tax_id, tax_line in old_taxonomy.items():
-        for name in reversed(ordered_names):
+        for name in reversed(ordered_names[1:]): # don't touch superkingdom
             res_taxa = remove_bad(tax_line, name, bad_value)
             if res_taxa != '':
                 break
         taxonomy_with_wholes[tax_id] = tax_line
-    remove_empty_and_get_dups(taxonomy_with_wholes)
     return taxonomy_with_wholes
 
 def separate_binomial_name(tax_line):
@@ -173,17 +171,18 @@ def process(args):
     ordered_names = "superkingdom", "phylum", "class", "orderx", "family", "genus", "species", "strain"
     bad_value     = "Fungi", "unculturedfungus", "unidentified", "sp", "sp.", "unculturedsoil_fungus", "unidentified_sp.", "unculturedcompost_fungus", "unculturedectomycorrhizal_fungus"
     old_taxonomy, time_stamps_ids  = make_taxa_dict(tax_infile, ordered_names)
+    print "old_taxonomy = %s" % old_taxonomy
     separated_species_taxonomy = {}
     for tax_id, tax_line in old_taxonomy.items():
         separated_species_taxonomy[tax_id] = separate_binomial_name(tax_line)
     taxononomy_with_empty = {}
     for key, value in separated_species_taxonomy.items():
         taxononomy_with_empty[key] = make_empty_taxa(ordered_names, value)    
-    # print "taxonomy_with_empty" 
-    # print taxonomy_with_empty
-    taxonomy_with_wholes  = remove_empty_and_bad(taxononomy_with_empty, bad_value, ordered_names)
-    # print "taxonomy_with_wholes" 
-    # print taxonomy_with_wholes
+    taxonomy_with_wholes     = remove_bad_from_end(taxononomy_with_empty, bad_value, ordered_names)
+    taxonomy_no_dup, dup_ids = remove_empty_and_get_dups(taxonomy_with_wholes)
+    
+    print "taxonomy_no_dup = %s" % taxonomy_no_dup
+    print "dup_ids = %s" % dup_ids
     
     for key, value in taxonomy_with_wholes.items():
         upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
