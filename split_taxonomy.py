@@ -87,10 +87,7 @@ def remove_empty_and_get_dups(taxonomy_with_wholes):
         taxon        = ""
         print "=================="
         print "tax_id = %s" % tax_id
-        for rank_name, taxon in tax_line.items():
-            print "rank_name = %s, taxon = %s" % (rank_name, taxon)
-            if (taxon != ""):
-                new_tax_line[rank_name] = taxon #dict((k1, v1) for k1, v1 in v.iteritems() if (v1 != "")
+        new_tax_line = dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
         print "new_tax_line = %s" % new_tax_line
         if new_tax_line in taxonomy_no_dup.values():
             for key in taxonomy_no_dup.keys():
