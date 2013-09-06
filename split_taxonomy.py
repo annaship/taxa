@@ -163,32 +163,34 @@ def update_taxonomies_sep_ids(ordered_names):
 def update_sequence_uniq_infos(dup_ids):
     # dup_ids = {'41': [], '1': [], '91': [], '3': [], '2': [], '5': ['81'], '4': [], '7': ['6', '8'], '6': [], '9': [], '8': [], '81': []}
     
-    sql = """
-        SELECT * FROM sequence_uniq_infos
-        WHERE taxonomy_id in (%s)
-    """ % ", ".join(dup_ids.keys())
-    print sql
-    res = shared.my_conn.execute_fetch_select(sql)    
+    # sql = """
+    #     SELECT * FROM sequence_uniq_infos
+    #     WHERE taxonomy_id in (%s)
+    # """ % ", ".join(dup_ids.keys())
+    # print sql
+    # res = shared.my_conn.execute_fetch_select(sql)    
     # print res
     dup_only = dict((k, v) for k, v in dup_ids.items() if v)
     print dup_only
-    # for old_id, new_ids in dup_only.items():
-    for row in res:
-        print "row[2] = %s" % row[2]
-    #         print row
-    #         print "row[2] = %s, old_id = %s, new_ids = %s" % (row[2], old_id, new_ids)
-            # if int(row[2]) == int(old_id):
-            #     if old_id in new_ids:
-                # for new_id in new_ids:
-                #     print "new_id = %s" % new_id
-                #     print "URA"
+
+    for good_id, dup_ids in dup_only.items():
+        print "good_id = %s, dup_ids = %s" % (good_id, dup_ids)
+        sql_update = """
+            UPDATE sequence_uniq_infos
+            SET taxonomy_id = %s
+            WHERE taxonomy_id in (%s)
+        """ % (good_id, ", ".join(dup_ids))
+        print sql_update
+    #     for row in res:
+    #         print "row[2] = %s" % row[2]
+    #         # print row
+    # #         print "row[2] = %s, old_id = %s, new_ids = %s" % (row[2], old_id, new_ids)
+    #         # if int(row[2]) == int(old_id):
+    #             # for new_id in new_ids:
+    #             #     print "new_id = %s, str(row[2]) = %s" % (new_id, str(row[2]))
+    #         if str(row[2]) in new_ids:
+    #             print old_id
                 # print "new_ids = %s" % new_ids
-                # sql_update = """
-                # UPDATE sequence_uniq_infos
-                # SET taxonomy_id = %s
-                # WHERE taxonomy_id = %s
-                # """ %
-                # ()
 
 # What to do if the same taxonom,y has diff gast?
 # (128L, 128L, 81L, Decimal('0.01600'), 0L, 175L, 4L, 'v6_AO868,v6_AO871', datetime.datetime(2013, 8, 19, 13, 11), datetime.datetime(2013, 8, 19, 13, 11))
@@ -303,14 +305,14 @@ def process(args):
     print "taxonomy_no_dup = %s" % taxonomy_no_dup
     print "dup_ids = %s" % dup_ids
     
-    create_new_taxa_tables()
-    
-    for key, value in taxonomy_with_wholes.items():
-        upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
-    update_taxa_ranks_ids()    
-    update_taxonomies_sep_ids(ordered_names)
-    taxa_insert()
-    taxonomies_insert()
+    # create_new_taxa_tables()
+    # 
+    # for key, value in taxonomy_with_wholes.items():
+    #     upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
+    # update_taxa_ranks_ids()    
+    # update_taxonomies_sep_ids(ordered_names)
+    # taxa_insert()
+    # taxonomies_insert()
     update_sequence_uniq_infos(dup_ids)
     
     
