@@ -77,17 +77,13 @@ def remove_bad(tax_line, name, bad_value):
             
 def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
     taxonomy_with_wholes = {}
-    new_taxonomy_value   = {}
-    taxonomy_dup         = {}
-    print "old_taxonomy = %s" % old_taxonomy
-    ordered_names_from_phylum = ordered_names[1:] #no kingdom and kingdom_phylum
+    ordered_names_from_phylum = ordered_names[1:] #no superkingdom
     for tax_id, tax_line in old_taxonomy.items():
         for name in reversed(ordered_names):
             res_taxa = remove_bad(tax_line, name, bad_value)
             if res_taxa != '':
                 break
         taxonomy_with_wholes[tax_id] = tax_line
-    # print taxonomy_with_wholes
     return taxonomy_with_wholes
 
 def separate_binomial_name(tax_line):
@@ -153,27 +149,22 @@ def process(args):
     ordered_names = "superkingdom", "phylum", "class", "orderx", "family", "genus", "species", "strain"
     bad_value     = "Fungi", "unculturedfungus", "unidentified", "sp", "sp.", "unculturedsoil_fungus", "unidentified_sp.", "unculturedcompost_fungus", "unculturedectomycorrhizal_fungus"
     old_taxonomy, time_stamps_ids  = make_taxa_dict(tax_infile, ordered_names)
-    # print old_taxonomy
-    # print time_stamps_ids
     separated_species_taxonomy = {}
     for tax_id, tax_line in old_taxonomy.items():
-        # print "tax_id = %s, tax_line = %s" % (tax_id, tax_line)
         separated_species_taxonomy[tax_id] = separate_binomial_name(tax_line)
-    # print "separated_species_taxonomy" 
-    # print separated_species_taxonomy
     taxononomy_with_empty = {}
     for key, value in separated_species_taxonomy.items():
         taxononomy_with_empty[key] = make_empty_taxa(ordered_names, value)    
-    # print "taxononomy_with_empty" 
-    # print taxononomy_with_empty
+    # print "taxonomy_with_empty" 
+    # print taxonomy_with_empty
     taxonomy_with_wholes  = remove_empty_and_bad(taxononomy_with_empty, bad_value, ordered_names)
     # print "taxonomy_with_wholes" 
     # print taxonomy_with_wholes
     
-    # for key, value in taxonomy_with_wholes.items():
-    #     upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
-    # update_taxa_ranks_ids()    
-    # update_taxonomies_sep_ids(ordered_names)
+    for key, value in taxonomy_with_wholes.items():
+        upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
+    update_taxa_ranks_ids()    
+    update_taxonomies_sep_ids(ordered_names)
  
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
