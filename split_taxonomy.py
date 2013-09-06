@@ -120,7 +120,7 @@ def upload_taxa(value):
         sql_taxa = ""
         # todo: create all values once: VALUES ("%s", "%s"), ("%s", "%s")...
         sql_taxa       = 'INSERT IGNORE INTO taxa_temp (taxon, rank) VALUES ("%s", "%s")' % (taxon, rank)
-        {'superkingdom': 'Archaea', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei'}
+        # {'superkingdom': 'Archaea', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei'}
         # print "sql_taxa = %s" % sql_taxa
         shared.my_conn.execute_no_fetch(sql_taxa)    
     
@@ -167,12 +167,124 @@ def update_sequence_uniq_infos(dup_ids):
         SELECT * FROM sequence_uniq_infos
         WHERE taxonomy_id in (%s)
     """ % ", ".join(dup_ids.keys())
-    # print sql
+    print sql
     res = shared.my_conn.execute_fetch_select(sql)    
-    print res
-    # for 
+    # print res
+    dup_only = dict((k, v) for k, v in dup_ids.items() if v)
+    print dup_only
+    # for old_id, new_ids in dup_only.items():
+    for row in res:
+        print "row[2] = %s" % row[2]
+    #         print row
+    #         print "row[2] = %s, old_id = %s, new_ids = %s" % (row[2], old_id, new_ids)
+            # if int(row[2]) == int(old_id):
+            #     if old_id in new_ids:
+                # for new_id in new_ids:
+                #     print "new_id = %s" % new_id
+                #     print "URA"
+                # print "new_ids = %s" % new_ids
+                # sql_update = """
+                # UPDATE sequence_uniq_infos
+                # SET taxonomy_id = %s
+                # WHERE taxonomy_id = %s
+                # """ %
+                # ()
 
+# What to do if the same taxonom,y has diff gast?
+# (128L, 128L, 81L, Decimal('0.01600'), 0L, 175L, 4L, 'v6_AO868,v6_AO871', datetime.datetime(2013, 8, 19, 13, 11), datetime.datetime(2013, 8, 19, 13, 11))
+# (165L, 165L, 81L, Decimal('0.01600'), 0L, 174L, 4L, 'v6_AO871', datetime.datetime(2013, 8, 19, 13, 11), datetime.datetime(2013, 8, 19, 13, 11))
+            
+def create_new_taxa_tables():
+    sql1 = """
+        CREATE TABLE IF NOT EXISTS `taxa` (
+          `id` int(11) NOT NULL AUTO_INCREMENT,
+          `taxon` varchar(300) DEFAULT NULL,
+          rank_id  int(11) NOT NULL, 
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `taxon` (`taxon`)
+        ) ENGINE=InnoDB CHARSET=latin1;
+    """
+    shared.my_conn.execute_no_fetch(sql1)    
+    sql2 = """
+    CREATE TABLE IF NOT EXISTS `taxonomies_sep` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `superkingdom` varchar(60) NOT NULL DEFAULT '',
+      `superkingdom_id` int(11) DEFAULT NULL,
+      `phylum` varchar(60) NOT NULL DEFAULT '',
+      phylum_id int(11) DEFAULT NULL,
+      `class` varchar(60) NOT NULL DEFAULT '',
+      class_id int(11) DEFAULT NULL,
+      `orderx` varchar(60) NOT NULL DEFAULT '',
+      orderx_id int(11) DEFAULT NULL,
+      `family` varchar(60) NOT NULL DEFAULT '',
+      family_id int(11) DEFAULT NULL,
+      `genus` varchar(60) NOT NULL DEFAULT '',
+      genus_id int(11) DEFAULT NULL,
+      `species` varchar(60) NOT NULL DEFAULT '',
+      species_id int(11) DEFAULT NULL,
+      `strain` varchar(60) NOT NULL DEFAULT '',
+      strain_id int(11) DEFAULT NULL,
+      `created_at` datetime DEFAULT NULL,
+      `updated_at` datetime DEFAULT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `all_names` (`superkingdom`,`phylum`,`class`,`orderx`,`family`,`genus`,`species`,`strain`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+    """
+    shared.my_conn.execute_no_fetch(sql2)   
+    sql3 = """
+    CREATE TABLE IF NOT EXISTS `taxa_temp` (
+      `id` INT(11) NOT NULL AUTO_INCREMENT,
+      `taxon` VARCHAR(300) DEFAULT NULL,
+      `rank_id` INT(11) NOT NULL,
+      `rank` VARCHAR(32) NOT NULL DEFAULT '',  
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `taxon` (`taxon`)
+    ) ENGINE=INNODB DEFAULT CHARSET=latin1;
+    """
+    shared.my_conn.execute_no_fetch(sql3)    
+    sql4 = """
+    RENAME TABLE taxonomies TO taxonomies_old
+    """
+    shared.my_conn.execute_no_fetch(sql4)    
+    sql5 = """
+    CREATE TABLE IF NOT EXISTS `taxonomies` (
+      `id` int(11) NOT NULL AUTO_INCREMENT,
+      `superkingdom_id` int(11) DEFAULT NULL,
+      `phylum_id` int(11) DEFAULT NULL,
+      `class_id` int(11) DEFAULT NULL,
+      `orderx_id` int(11) DEFAULT NULL,
+      `family_id` int(11) DEFAULT NULL,
+      `genus_id` int(11) DEFAULT NULL,
+      `species_id` int(11) DEFAULT NULL,
+      `strain_id` int(11) DEFAULT NULL,
+      `created_at` datetime DEFAULT NULL,
+      `updated_at` datetime DEFAULT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `all_names` (`superkingdom_id`,`phylum_id`,`class_id`,`orderx_id`,`family_id`,`genus_id`,`species_id`,`strain_id`),
+        CONSTRAINT `taxonomy_fk_taxa_id1` FOREIGN KEY (`superkingdom_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE,
+        CONSTRAINT `taxonomy_fk_taxa_id2` FOREIGN KEY (`phylum_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE,
+        CONSTRAINT `taxonomy_fk_taxa_id3` FOREIGN KEY (`class_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE,
+        CONSTRAINT `taxonomy_fk_taxa_id4` FOREIGN KEY (`orderx_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE,
+        CONSTRAINT `taxonomy_fk_taxa_id5` FOREIGN KEY (`family_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE,
+        CONSTRAINT `taxonomy_fk_taxa_id6` FOREIGN KEY (`genus_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE,
+        CONSTRAINT `taxonomy_fk_taxa_id7` FOREIGN KEY (`species_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE,
+        CONSTRAINT `taxonomy_fk_taxa_id8` FOREIGN KEY (`strain_id`) REFERENCES `taxa` (`id`) ON UPDATE CASCADE 
+    ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+    """
+    shared.my_conn.execute_no_fetch(sql5)    
+     
+def taxa_insert():
+    sql = """
+        INSERT IGNORE INTO taxa (id, taxon, rank_id) SELECT id, taxon, rank_id FROM taxa_temp
+    """
+    shared.my_conn.execute_no_fetch(sql)    
 
+def taxonomies_insert():
+    sql = """
+    INSERT IGNORE INTO taxonomies (superkingdom_id, phylum_id, class_id, orderx_id, family_id, genus_id, species_id, strain_id, created_at, updated_at) SELECT superkingdom_id, phylum_id, class_id, orderx_id, family_id, genus_id, species_id, strain_id, created_at, updated_at FROM taxonomies_sep
+    """
+    shared.my_conn.execute_no_fetch(sql)    
+    
 def process(args):
     tax_infile    = args.tax_infile
     ordered_names = "superkingdom", "phylum", "class", "orderx", "family", "genus", "species", "strain"
@@ -191,12 +303,18 @@ def process(args):
     print "taxonomy_no_dup = %s" % taxonomy_no_dup
     print "dup_ids = %s" % dup_ids
     
+    create_new_taxa_tables()
+    
     for key, value in taxonomy_with_wholes.items():
         upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
     update_taxa_ranks_ids()    
     update_taxonomies_sep_ids(ordered_names)
+    taxa_insert()
+    taxonomies_insert()
     update_sequence_uniq_infos(dup_ids)
- 
+    
+    
+    
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
     usage = "usage: %prog [options] arg1"
