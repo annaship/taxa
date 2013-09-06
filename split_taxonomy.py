@@ -70,9 +70,15 @@ def make_taxa_dict(tax_infile, ordered_names):
             time_stamps_ids[id_tax] = time_stamps
         return taxonomy, time_stamps_ids
             
-def remove_empty_and_bad(old_taxonomy, bad_value):
+def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
     taxonomy_with_wholes = {}
-    taxonomy_with_wholes = dict((tax_id, dict((k1, v1) for k1, v1 in v.iteritems() if ((v1 != "") and (v1 not in bad_value))))  for tax_id, v in old_taxonomy.iteritems())
+    print "old_taxonomy = %s" % old_taxonomy
+    for key_id, taxonomy_value in old_taxonomy.items():
+        for rank_name in ordered_names:
+            print "key_id = %s, taxonomy_value = %s" % (key_id, taxa_value)
+            print "rank_name = %s" % rank_name
+    # taxonomy_with_wholes = dict((tax_id, dict((k1, v1) for k1, v1 in v.iteritems() if ((v1 != "") and (v1 not in bad_value)) else ))  for tax_id, v in old_taxonomy.iteritems())
+    # print taxonomy_with_wholes
     return taxonomy_with_wholes
 
 def separate_binomial_name(tax_line):
@@ -114,7 +120,6 @@ def upload_new_taxonomy(ordered_names, key, value, time_stamps_ids):
     # print "sql_taxonomies = %s" % sql_taxonomies
     shared.my_conn.execute_no_fetch(sql_taxonomies)    
 
-
 def update_taxa_ranks_ids():
     sql = """
         UPDATE taxa_temp
@@ -123,7 +128,6 @@ def update_taxa_ranks_ids():
     """
     shared.my_conn.execute_no_fetch(sql)    
     
-
 def update_taxonomies_sep_ids(ordered_names):
     for name in ordered_names:
         sql = """
@@ -136,7 +140,6 @@ def update_taxonomies_sep_ids(ordered_names):
 
 def process(args):
     tax_infile    = args.tax_infile
-    taxout_fh     = open(args.tax_outfile,'w')
     ordered_names = "superkingdom", "phylum", "class", "orderx", "family", "genus", "species", "strain"
     bad_value     = "Fungi", "unculturedfungus", "unidentified", "sp", "sp.", "unculturedsoil_fungus", "unidentified_sp.", "unculturedcompost_fungus", "unculturedectomycorrhizal_fungus"
     old_taxonomy, time_stamps_ids  = make_taxa_dict(tax_infile, ordered_names)
@@ -148,29 +151,26 @@ def process(args):
         separated_species_taxonomy[tax_id] = separate_binomial_name(tax_line)
     # print "separated_species_taxonomy" 
     # print separated_species_taxonomy
-    taxonomy_with_wholes = remove_empty_and_bad(separated_species_taxonomy, bad_value)
+    taxononomy_with_empty = {}
+    for key, value in separated_species_taxonomy.items():
+        taxononomy_with_empty[key] = make_empty_taxa(ordered_names, value)    
+    # print "taxononomy_with_empty" 
+    # print taxononomy_with_empty
+    taxonomy_with_wholes  = remove_empty_and_bad(taxononomy_with_empty, bad_value, ordered_names)
     # print "taxonomy_with_wholes" 
     # print taxonomy_with_wholes
     
-    for key, value in taxonomy_with_wholes.items():
-        upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
-    update_taxa_ranks_ids()    
-    update_taxonomies_sep_ids(ordered_names)
+    # for key, value in taxonomy_with_wholes.items():
+    #     upload_new_taxonomy(ordered_names, key, value, time_stamps_ids[key])
+    # update_taxa_ranks_ids()    
+    # update_taxonomies_sep_ids(ordered_names)
  
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
-    THE_DEFAULT_BASE_OUTPUT = '.'
-
     usage = "usage: %prog [options] arg1"
     parser = argparse.ArgumentParser(description='ref fasta/tax file creator')
     parser.add_argument('-it', '--tax_in', required=True, dest = "tax_infile",
                                                  help = '')   
-    #parser.add_argument('-if', '--fasta_in', required=True, dest = "fasta_infile",
-    #                                             help = '')
-    parser.add_argument('-ot', '--tax_out', required=False, dest = "tax_outfile",   default='outfile.tax',
-                                                 help = '')
-    #parser.add_argument('-of', '--fasta_out', required=False, dest = "fasta_outfile", default='outfile.fasta',
-    #                                             help = '')                                            
     args = parser.parse_args() 
     
      
