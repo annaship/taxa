@@ -80,6 +80,8 @@ def remove_empty_and_get_dups(taxonomy_with_wholes):
     dup_ids         = {}
     print "taxonomy_with_wholes = %s" % taxonomy_with_wholes
     for tax_id, tax_line in taxonomy_with_wholes.items():    
+        if tax_id not in dup_ids.keys():
+            dup_ids[tax_id] = []    
         new_tax_line = {}
         rank_name    = "" 
         taxon        = ""
@@ -90,30 +92,14 @@ def remove_empty_and_get_dups(taxonomy_with_wholes):
             if (taxon != ""):
                 new_tax_line[rank_name] = taxon #dict((k1, v1) for k1, v1 in v.iteritems() if (v1 != "")
         print "new_tax_line = %s" % new_tax_line
-        # for key in taxonomy_no_dup.keys():
-        #     print 'taxonomy_no_dup = %s' % taxonomy_no_dup
-        #     
-        #     if taxonomy_no_dup[key] == new_tax_line:
-        #         print "tax_id dup = %s, taxonomy_no_dup['id']" % (tax_id, taxonomy_no_dup)
-        #     else:
-        #         taxonomy_no_dup[tax_id] = new_tax_line
-        # print 'taxonomy_no_dup[tax_id] = %s' % taxonomy_no_dup[tax_id]
         if new_tax_line in taxonomy_no_dup.values():
-            # print "tax_id dup = %s, taxonomy_no_dup['id']" % (tax_id, taxonomy_no_dup)
             for key in taxonomy_no_dup.keys():
-                # print 'taxonomy_no_dup = %s' % taxonomy_no_dup                
                 if taxonomy_no_dup[key] == new_tax_line:
-                    print "key = %s" % key
-                    # print "tax_id dup = %s, taxonomy_no_dup['id'] = %s" % (tax_id, taxonomy_no_dup[tax_id])            
+                    print "exist key = %s" % key
+                    dup_ids[key].append(tax_id)
         else:
             taxonomy_no_dup[tax_id] = new_tax_line
-            # dup_ids[tax_id].add()
-            
-            
-        # taxonomy_no_dup = dict((tax_id, dict((k1, v1) for k1, v1 in v.iteritems() if (v1 != "")))  for tax_id, v in old_taxonomy.iteritems())
-        # print taxonomy_no_dup
-
-        # taxonomy_no_dup[tax_id] = 
+    print "dup_ids = %s" % dup_ids
 
             
 def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
