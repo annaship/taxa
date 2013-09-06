@@ -74,6 +74,47 @@ def remove_bad(tax_line, name, bad_value):
     if tax_line[name] in bad_value:
         tax_line[name] = ''
     return tax_line[name]
+
+def remove_empty_and_get_dups(taxonomy_with_wholes):
+    taxonomy_no_dup = {}
+    dup_ids         = {}
+    print "taxonomy_with_wholes = %s" % taxonomy_with_wholes
+    for tax_id, tax_line in taxonomy_with_wholes.items():    
+        new_tax_line = {}
+        rank_name    = "" 
+        taxon        = ""
+        print "=================="
+        print "tax_id = %s" % tax_id
+        for rank_name, taxon in tax_line.items():
+            print "rank_name = %s, taxon = %s" % (rank_name, taxon)
+            if (taxon != ""):
+                new_tax_line[rank_name] = taxon #dict((k1, v1) for k1, v1 in v.iteritems() if (v1 != "")
+        print "new_tax_line = %s" % new_tax_line
+        # for key in taxonomy_no_dup.keys():
+        #     print 'taxonomy_no_dup = %s' % taxonomy_no_dup
+        #     
+        #     if taxonomy_no_dup[key] == new_tax_line:
+        #         print "tax_id dup = %s, taxonomy_no_dup['id']" % (tax_id, taxonomy_no_dup)
+        #     else:
+        #         taxonomy_no_dup[tax_id] = new_tax_line
+        # print 'taxonomy_no_dup[tax_id] = %s' % taxonomy_no_dup[tax_id]
+        if new_tax_line in taxonomy_no_dup.values():
+            # print "tax_id dup = %s, taxonomy_no_dup['id']" % (tax_id, taxonomy_no_dup)
+            for key in taxonomy_no_dup.keys():
+                # print 'taxonomy_no_dup = %s' % taxonomy_no_dup                
+                if taxonomy_no_dup[key] == new_tax_line:
+                    print "key = %s" % key
+                    # print "tax_id dup = %s, taxonomy_no_dup['id'] = %s" % (tax_id, taxonomy_no_dup[tax_id])            
+        else:
+            taxonomy_no_dup[tax_id] = new_tax_line
+            # dup_ids[tax_id].add()
+            
+            
+        # taxonomy_no_dup = dict((tax_id, dict((k1, v1) for k1, v1 in v.iteritems() if (v1 != "")))  for tax_id, v in old_taxonomy.iteritems())
+        # print taxonomy_no_dup
+
+        # taxonomy_no_dup[tax_id] = 
+
             
 def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
     taxonomy_with_wholes = {}
@@ -84,6 +125,7 @@ def remove_empty_and_bad(old_taxonomy, bad_value, ordered_names):
             if res_taxa != '':
                 break
         taxonomy_with_wholes[tax_id] = tax_line
+    remove_empty_and_get_dups(taxonomy_with_wholes)
     return taxonomy_with_wholes
 
 def separate_binomial_name(tax_line):
