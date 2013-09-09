@@ -129,16 +129,7 @@ class MyTaxonomy:
             # {'superkingdom': 'Archaea', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei'}
             print "sql_taxa = %s" % sql_taxa
             # shared.my_conn.execute_no_fetch(sql_taxa)    
-    
-    def make_empty_taxa(self, my_dict):
-        for name in self.ordered_names:
-            # +            self.dup_ids[tax_id] = self.dup_ids.get(tax_id, []) # populate all keys
-            
-            # my_dict[name] = taxon_dict.get()
-            if name not in my_dict.keys():
-                my_dict[name] = ""
-        return my_dict
-    
+        
     def upload_new_taxonomy(self, tax_id, taxon_dict):
         self.upload_taxa(taxon_dict)            
         sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (tax_id, taxon_dict.get("superkingdom", ""), taxon_dict.get("phylum", ""), taxon_dict.get("class", ""), taxon_dict.get("orderx", ""), taxon_dict.get("family", ""), taxon_dict.get("genus", ""), taxon_dict.get("species", ""), taxon_dict.get("strain", ""), self.time_stamps_ids[tax_id][0], self.time_stamps_ids[tax_id][1])
@@ -456,13 +447,13 @@ class MyTaxonomy:
             self.taxonomy_check()    
 
 #             ---------- temp test -------------
-        start = time.time()
-        print "start upload_new_taxonomy"
-        for key, value in self.new_taxonomy.items():
-            self.upload_new_taxonomy(key, value)
-        end = time.time()
-        print end - start
-                
+        # start = time.time()
+        # print "start upload_new_taxonomy"
+        # for key, value in self.new_taxonomy.items():
+        #     self.upload_new_taxonomy(key, value)
+        # end = time.time()
+        # print end - start
+        #         
     
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
