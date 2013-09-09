@@ -132,20 +132,24 @@ class MyTaxonomy:
     
     def make_empty_taxa(self, my_dict):
         for name in self.ordered_names:
+            # +            self.dup_ids[tax_id] = self.dup_ids.get(tax_id, []) # populate all keys
+            
+            # my_dict[name] = taxon_dict.get()
             if name not in my_dict.keys():
                 my_dict[name] = ""
         return my_dict
     
-    def upload_new_taxonomy(self, key, value):
+    def upload_new_taxonomy(self, tax_id, taxon_dict):
         # print time_stamps_ids
-        # print key
-        print value
-        # , self.time_stamps_ids[key]
-        self.upload_taxa(value)
-        my_dict = self.make_empty_taxa(value)
+        # print tax_id
+        # print taxon_dict
+        # 9
+        #         {'superkingdom': 'Archaea', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'genus': 'Geogemma', 'species': 'pacifica'}
+        self.upload_taxa(taxon_dict)
+        # my_dict = self.make_empty_taxa(taxon_dict)
             
         sql_taxonomies = ""
-        sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, my_dict["superkingdom"], my_dict["phylum"], my_dict["class"], my_dict["orderx"], my_dict["family"], my_dict["genus"], my_dict["species"], my_dict["strain"], self.time_stamps_ids[key][0], self.time_stamps_ids[key][1])
+        sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (tax_id, taxon_dict.get("superkingdom", ""), taxon_dict.get("phylum", ""), taxon_dict.get("class", ""), taxon_dict.get("orderx", ""), taxon_dict.get("family", ""), taxon_dict.get("genus", ""), taxon_dict.get("species", ""), taxon_dict.get("strain", ""), self.time_stamps_ids[tax_id][0], self.time_stamps_ids[tax_id][1])
         print "sql_taxonomies = %s" % sql_taxonomies
         # shared.my_conn.execute_no_fetch(sql_taxonomies)    
 
