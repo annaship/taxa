@@ -386,8 +386,8 @@ class MyTaxonomy:
         'family': ["aceae"]
         }
         
-        for term_name, terminal_list in terminals.items():
-            return [True for terminal in terminal_list if taxon_name.endswith(terminal) and term_name != rank_name]
+        # for term_name, terminal_list in terminals.items():
+        return [[True for terminal in terminal_list if taxon_name.endswith(terminal) and term_name != rank_name] for term_name, terminal_list in terminals.items()]
         
     def taxonomy_check(self):
         for id_key, name_values in self.new_taxonomy.items():
