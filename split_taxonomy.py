@@ -398,21 +398,43 @@ class MyTaxonomy:
     def species_initial(self, name):
         pass
 
-    def check_rank(self, rank_name, taxon_name):
-        return {
-            'phylum': self.is_phylum(taxon_name),
-            'class':  self.is_class(taxon_name),
-            'orderx': self.is_order(taxon_name),
-            'family': self.is_family(taxon_name),
-        }[rank_name]
+    def check_ranks(self, rank_name, taxon_name):
+        terminals = {
+        'phylum': ["phyta", "mycota"]
+        'class': ["opsida", "phyceae", "mycetes"]
+        'orderx': ["ales"]
+        'family': ["aceae"]
+        }
+        
+        print terminals[rank_name]
+        for terminal in terminals[rank_name]:
+            if taxon_name.endswith(terminal):
+                return True
+            else:
+                return False
+        
+        
+
+    # def check_rank(self, rank_name, taxon_name):
+    #     return {
+    #         'phylum': self.is_phylum(taxon_name),
+    #         'class':  self.is_class(taxon_name),
+    #         'orderx': self.is_order(taxon_name),
+    #         'family': self.is_family(taxon_name),
+    #     }[rank_name]
         
     def taxonomy_check(self):
+        list_of_check_ranks = ['phylum', 'class', 'orderx', 'family']
         for id_key, name_values in self.new_taxonomy.items():
             for rank_name, taxon_name in name_values.items():     
-                if (rank_name in ('phylum', 'class', 'orderx', 'family')): 
-                    res = self.check_rank(rank_name, taxon_name)
-                    if not res:
-                        print "rank_name %s, taxon_name = %s" % (rank_name, taxon_name)
+                print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
+                print self.check_ranks(rank_name, taxon_name)
+
+                
+                # if (rank_name in ('phylum', 'class', 'orderx', 'family')): 
+                #     res = self.check_rank(rank_name, taxon_name)
+                #     if not res:
+                #         print "rank_name %s, taxon_name = %s" % (rank_name, taxon_name)
                 # self.is_phylum(taxon_name)
                 # self.is_class(taxon_name)
                 # self.is_order(taxon_name)
