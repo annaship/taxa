@@ -354,7 +354,7 @@ class MyTaxonomy:
     def species_initial(self, name):
         pass
 
-    def check_ranks(self, rank_name, taxon_name):
+    def check_ranks(self, name_values):
         terminals = {
         'phylum': ["phyta", "mycota"],
         'class': ["opsida", "phyceae", "mycetes"],
@@ -363,21 +363,33 @@ class MyTaxonomy:
         }
         
         # print [[(terminal, rank_name) for terminal in terminal_list if taxon_name.endswith(terminal) and term_name != rank_name] for term_name, terminal_list in terminals.items()]
-        for term_name, terminal_list in terminals.items():
-            return [True for terminal in terminal_list if taxon_name.endswith(terminal) and term_name != rank_name]
+        
+        for rank_name, taxon_name in name_values.items():     
+            for term_name, terminal_list in terminals.items():
+                return [True for terminal in terminal_list if taxon_name.endswith(terminal) and term_name != rank_name]
         
     def taxonomy_check(self):
+        start = time.time()
+        
         problem_taxa = {}
         for id_key, name_values in self.new_taxonomy.items():
-            for rank_name, taxon_name in name_values.items():     
-                # print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
-                if self.check_ranks(rank_name, taxon_name):
+            # for rank_name, taxon_name in name_values.items():     
+            #     # print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
+            #     if self.check_ranks(rank_name, taxon_name):
+            #         # print self.check_ranks(rank_name, taxon_name)
+            #         # print "id_key = %s, rank_name = %s, taxon_name = %s, name_values = %s" % (id_key, rank_name, taxon_name, name_values)
+            #         problem_taxa[id_key] = name_values
+            
+                if self.check_ranks(name_values):
                     # print self.check_ranks(rank_name, taxon_name)
                     # print "id_key = %s, rank_name = %s, taxon_name = %s, name_values = %s" % (id_key, rank_name, taxon_name, name_values)
                     problem_taxa[id_key] = name_values
-                self.has_spaces(taxon_name)
-                self.species_initial(taxon_name)
+                # self.has_spaces(taxon_name)
+                # self.species_initial(taxon_name)
         print "problem_taxa = %s" % problem_taxa
+        end = time.time()
+        print end - start
+        
         
     def process(self, args):
         tax_infile    = args.tax_infile
