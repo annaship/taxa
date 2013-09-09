@@ -72,11 +72,10 @@ class MyTaxonomy:
                 tax_line_split = line.split(",")
                 id_tax         = tax_line_split[0]
                 time_stamps    = tax_line_split[2:]
-                # print time_stamps
                 split_tax      = tax_line_split[1].strip('"').split(';')
         
                 self.old_taxonomy[id_tax] = dict(zip(self.ordered_names, split_tax))
-                time_stamps_ids[id_tax] = time_stamps
+                time_stamps_ids[id_tax]   = time_stamps
             return time_stamps_ids
             
     def remove_bad(self, tax_line, name):
@@ -84,27 +83,30 @@ class MyTaxonomy:
             tax_line[name] = ''
         return tax_line[name]
 
-    def remove_empty(self, tax_line):
-        return dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
-
-    def get_dups(self, new_tax_line, taxonomy_no_dup, tax_id):
-        if new_tax_line in taxonomy_no_dup.values():
-            [self.dup_ids[key].append(tax_id) for key in taxonomy_no_dup.keys() if (taxonomy_no_dup[key] == new_tax_line)]
-        else:
-            taxonomy_no_dup[tax_id] = new_tax_line
-        return taxonomy_no_dup
+    # def remove_empty(self, tax_line):
+    #     return dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
+    # 
+    # def get_dups(self, new_tax_line, taxonomy_no_dup, tax_id):
+    #     if new_tax_line in taxonomy_no_dup.values():
+    #         [self.dup_ids[key].append(tax_id) for key in taxonomy_no_dup.keys() if (taxonomy_no_dup[key] == new_tax_line)]
+    #     else:
+    #         taxonomy_no_dup[tax_id] = new_tax_line
+    #     return taxonomy_no_dup
     
     def remove_empty_and_get_dups(self, taxonomy_with_wholes):
         taxonomy_no_dup = {}
-        for tax_id, tax_line in taxonomy_with_wholes.items():    
-            if tax_id not in self.dup_ids.keys():
-                self.dup_ids[tax_id] = []    
-            print self.dup_ids[tax_id]
+        
+        for tax_id, tax_line in taxonomy_with_wholes.items():                
+            self.dup_ids[tax_id] = self.dup_ids.get(tax_id, []) # populate all keys
             new_tax_line    = {}
             rank_name       = "" 
-            taxon           = ""
-            new_tax_line    = self.remove_empty(tax_line)
-            taxonomy_no_dup = self.get_dups(new_tax_line, taxonomy_no_dup, tax_id)        
+            taxon           = ""            
+            new_tax_line    = dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != "")) #remove_empty
+            #get_dups
+            if new_tax_line in taxonomy_no_dup.values():
+                [self.dup_ids[key].append(tax_id) for key in taxonomy_no_dup.keys() if (taxonomy_no_dup[key] == new_tax_line)]
+            else:
+                taxonomy_no_dup[tax_id] = new_tax_line            
         return taxonomy_no_dup
 
     def remove_bad_from_end(self, taxononomy_with_empty):
