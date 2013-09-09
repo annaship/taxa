@@ -139,7 +139,7 @@ class MyTaxonomy:
     def upload_new_taxonomy(self, key, value):
         # print time_stamps_ids
         # print key
-        # print value
+        print value
         # , self.time_stamps_ids[key]
         self.upload_taxa(value)
         my_dict = self.make_empty_taxa(value)
