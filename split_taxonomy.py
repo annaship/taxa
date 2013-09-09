@@ -321,37 +321,13 @@ class MyTaxonomy:
 
 #         ===================== Taxonomy check ==============
 # http://en.wikipedia.org/wiki/Taxonomic_rank
-    def is_phylum(self, name):
-        if name.endswith("phyta") or name.endswith("mycota"):
-            return True
-        else:
-            return False
     # Subdivision/Subphylum     -phytina -mycotina
-
-    def is_class(self, name):
-        if name.endswith("opsida") or name.endswith("phyceae") or name.endswith("mycetes"):
-            return True
-        else:
-            return False
     # Subclass  -idae -phycidae -mycetidae
-
     # Superorder        -anae
-    def is_order(self, name):
-        if name.endswith("ales"):
-            return True
-        else:
-            return False
     # Suborder  -ineae
     # Infraorder        -aria - could be species too!
-
-
     # Superfamily       -acea -oidea
     # Epifamily                 -oidae
-    def is_family(self, name):
-        if name.endswith("aceae"):
-            return True
-        else:
-            return False
     # "idae" - could by subclass or family
     # Subfamily -oideae -inae
     # Infrafamily                   -odd 
@@ -394,22 +370,11 @@ class MyTaxonomy:
         problem_taxa = {}
         for id_key, name_values in self.new_taxonomy.items():
             for rank_name, taxon_name in name_values.items():     
-                print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
+                # print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
                 if self.check_ranks(rank_name, taxon_name):
-                    print self.check_ranks(rank_name, taxon_name)
-                    print "id_key = %s, rank_name = %s, taxon_name = %s, name_values = %s" % (id_key, rank_name, taxon_name, name_values)
+                    # print self.check_ranks(rank_name, taxon_name)
+                    # print "id_key = %s, rank_name = %s, taxon_name = %s, name_values = %s" % (id_key, rank_name, taxon_name, name_values)
                     problem_taxa[id_key] = name_values
-                    problem_taxa[id_key]["problems"] = (rank_name, taxon_name)
-
-                
-                # if (rank_name in ('phylum', 'class', 'orderx', 'family')): 
-                #     res = self.check_rank(rank_name, taxon_name)
-                #     if not res:
-                #         print "rank_name %s, taxon_name = %s" % (rank_name, taxon_name)
-                # self.is_phylum(taxon_name)
-                # self.is_class(taxon_name)
-                # self.is_order(taxon_name)
-                # self.is_family(taxon_name)
                 self.has_spaces(taxon_name)
                 self.species_initial(taxon_name)
         print "problem_taxa = %s" % problem_taxa
