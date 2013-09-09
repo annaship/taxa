@@ -54,7 +54,8 @@ class MyTaxonomy:
         self.bad_value     = "Fungi", "unculturedfungus", "unidentified", "sp", "sp.", "unculturedsoil_fungus", "unidentified_sp.", "unculturedcompost_fungus", "unculturedectomycorrhizal_fungus"
         self.dup_ids       = {}
         self.old_taxonomy  = {}
-
+        self.new_taxonomy = {}
+        
     def make_taxa_dict(self, tax_infile):
         time_stamps_ids = {}
     
@@ -143,58 +144,6 @@ class MyTaxonomy:
                 my_dict[name] = ""
         return my_dict
     
-    # http://en.wikipedia.org/wiki/Taxonomic_rank
-    def is_phylum(self, name):
-        if name.endswith("phyta") or name.endswith("mycota"):
-            return True
-        else:
-            return False
-    # Subdivision/Subphylum     -phytina -mycotina
-
-    def is_class(self, name):
-        if name.endswith("opsida") or name.endswith("phyceae") or name.endswith("mycetes"):
-            return True
-        else:
-            return False
-    # Subclass  -idae -phycidae -mycetidae
-
-    # Superorder        -anae
-    def is_order(self, name):
-        if name.endswith("ales"):
-            return True
-        else:
-            return False
-    # Suborder  -ineae
-    # Infraorder        -aria - could be species too!
-
-
-    # Superfamily       -acea -oidea
-    # Epifamily                 -oidae
-    def is_family(self, name):
-        if name.endswith("aceae"):
-            return True
-        else:
-            return False
-    # "idae" - could by subclass or family
-    # Subfamily -oideae -inae
-    # Infrafamily                   -odd 
-    # Tribe -eae -ini
-    # Subtribe  -inae -ina    
-    # Infratribe                    -ad
-    # For Bacteria only:
-    # (http://en.wikipedia.org/wiki/Bacterial_taxonomy)
-    # Rank  Suffix  Example
-    # Genus     Elusimicrobium
-    # Subtribe (disused)    -inae   (Elusimicrobiinae)
-    # Tribe (disused)   -inae   (Elusimicrobiieae)
-    # Subfamily -oideae (Elusimicrobioideae)
-    # Family    -aceae  Elusimicrobiaceae
-    # Suborder  -ineae  (Elusimicrobineae)
-    # Order -ales   Elusimicrobiales
-    # Subclass  -idae   (Elusimicrobidae)
-    # Class -ia Elusimicrobia
-    # Phylum    see text    Elusimicrobia
-            
     def upload_new_taxonomy(self, key, value, time_stamps_ids):
         # print time_stamps_ids
         # print key
@@ -354,8 +303,8 @@ class MyTaxonomy:
     
         start = time.time()
         print "start upload_new_taxonomy"
-        for key, value in taxonomy_with_wholes.items():
-            upload_new_taxonomy(key, value, time_stamps_ids[key])
+        for key, value in self.new_taxonomy.items():
+            self.new_taxonomy(key, value, time_stamps_ids[key])
         end = time.time()
         print end - start
 
@@ -388,14 +337,88 @@ class MyTaxonomy:
         update_sequence_uniq_infos()
         end = time.time()
         print end - start
+
+
+#         ===================== Taxonomy check ==============
+# http://en.wikipedia.org/wiki/Taxonomic_rank
+    def is_phylum(self, name):
+        if name.endswith("phyta") or name.endswith("mycota"):
+            return True
+        else:
+            return False
+    # Subdivision/Subphylum     -phytina -mycotina
+
+    def is_class(self, name):
+        if name.endswith("opsida") or name.endswith("phyceae") or name.endswith("mycetes"):
+            return True
+        else:
+            return False
+    # Subclass  -idae -phycidae -mycetidae
+
+    # Superorder        -anae
+    def is_order(self, name):
+        if name.endswith("ales"):
+            return True
+        else:
+            return False
+    # Suborder  -ineae
+    # Infraorder        -aria - could be species too!
+
+
+    # Superfamily       -acea -oidea
+    # Epifamily                 -oidae
+    def is_family(self, name):
+        if name.endswith("aceae"):
+            return True
+        else:
+            return False
+    # "idae" - could by subclass or family
+    # Subfamily -oideae -inae
+    # Infrafamily                   -odd 
+    # Tribe -eae -ini
+    # Subtribe  -inae -ina    
+    # Infratribe                    -ad
+    # For Bacteria only:
+    # (http://en.wikipedia.org/wiki/Bacterial_taxonomy)
+    # Rank  Suffix  Example
+    # Genus     Elusimicrobium
+    # Subtribe (disused)    -inae   (Elusimicrobiinae)
+    # Tribe (disused)   -inae   (Elusimicrobiieae)
+    # Subfamily -oideae (Elusimicrobioideae)
+    # Family    -aceae  Elusimicrobiaceae
+    # Suborder  -ineae  (Elusimicrobineae)
+    # Order -ales   Elusimicrobiales
+    # Subclass  -idae   (Elusimicrobidae)
+    # Class -ia Elusimicrobia
+    # Phylum    see text    Elusimicrobia
+        
+    def has_spaces(self, name):
+        pass
+
+    def species_initial(self, name):
+        pass
+
+    def check_rank(self, rank_name, taxon_name):
+        return {
+            'phylum': self.is_phylum(taxon_name),
+            'class':  self.is_class(taxon_name),
+            'orderx': self.is_order(taxon_name),
+            'family': self.is_family(taxon_name),
+        }[rank_name]
         
     def taxonomy_check(self):
-        self.is_phylum(name)
-        self.is_class(name)
-        self.is_order(name)
-        self.is_family(name)
-        self.has_spaces(name)
-        self.species_initial(name)
+        for id_key, name_values in self.new_taxonomy.items():
+            for rank_name, taxon_name in name_values.items():     
+                if (rank_name in ('phylum', 'class', 'orderx', 'family')): 
+                    res = self.check_rank(rank_name, taxon_name)
+                    if not res:
+                        print "rank_name %s, taxon_name = %s" % (rank_name, taxon_name)
+                # self.is_phylum(taxon_name)
+                # self.is_class(taxon_name)
+                # self.is_order(taxon_name)
+                # self.is_family(taxon_name)
+                self.has_spaces(taxon_name)
+                self.species_initial(taxon_name)
         
     def process(self, args):
         tax_infile    = args.tax_infile
@@ -430,11 +453,11 @@ class MyTaxonomy:
 
         start = time.time()
         print "start remove_empty_and_get_dups"
-        taxonomy_no_dup = self.remove_empty_and_get_dups(taxonomy_with_wholes)
+        self.new_taxonomy = self.remove_empty_and_get_dups(taxonomy_with_wholes)
         end = time.time()
         print end - start
     
-        print "taxonomy_no_dup = %s" % taxonomy_no_dup
+        print "self.new_taxonomy = %s" % self.new_taxonomy
         print "self.dup_ids = %s" % self.dup_ids
     
         if args.db_update:
@@ -449,9 +472,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Taxonomy cleaning and splitting')
     parser.add_argument('tax_infile',
                         help = 'CSV file with taxonomy - import from env454.taxonomy (id,"taxonomy","created_at","updated_at")')   
-    parser.add_argument('--db_update', '-u', required = False, dest = 'db_update', default = False,
+    parser.add_argument('--db_update', '-u', required = False, action="store_true",
                         help = 'Update the db')
-    parser.add_argument('--tax_check', '-t', required = False, dest = 'taxonomy_check', default = False,
+    parser.add_argument('--taxonomy_check', '-t', required = False, action="store_true",
                         help = 'Check taxonomic names and get list of suspicious names')
                                                  
     args = parser.parse_args() 
