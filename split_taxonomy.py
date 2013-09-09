@@ -396,6 +396,7 @@ class MyTaxonomy:
             for rank_name, taxon_name in name_values.items():     
                 print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
                 if self.check_ranks(rank_name, taxon_name):
+                    print self.check_ranks(rank_name, taxon_name)
                     print "id_key = %s, rank_name = %s, taxon_name = %s, name_values = %s" % (id_key, rank_name, taxon_name, name_values)
                     problem_taxa[id_key] = name_values
                     problem_taxa[id_key]["problems"] = (rank_name, taxon_name)
