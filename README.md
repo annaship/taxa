@@ -1,5 +1,6 @@
 taxa
 ====
 
-Manipulation with taxonomy strings.
-Cleaning and uploadidng to a db
+Taxonomy strings' manipulation
+Cleaning and uploading to a db
+Checking regular endings
