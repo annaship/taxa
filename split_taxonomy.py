@@ -56,9 +56,9 @@ class MyTaxonomy:
         self.dup_ids       = defaultdict(list)
         self.old_taxonomy  = {}
         self.new_taxonomy  = {}
+        self.time_stamps_ids = {}
         
     def make_taxa_dict(self, tax_infile):
-        time_stamps_ids = {}
     
         # # id,"taxonomy","created_at","updated_at"
         # # 1,"Archaea;Crenarchaeota;Thermoprotei;Desulfurococcales;Desulfurococcaceae;Unassigned;uncultured crenarchaeote pBA3","2013-08-16 21:12:22","2013-08-16 21:12:22"
@@ -75,30 +75,18 @@ class MyTaxonomy:
                 time_stamps    = tax_line_split[2:]
                 split_tax      = tax_line_split[1].strip('"').split(';')
         
-                self.old_taxonomy[id_tax] = dict(zip(self.ordered_names, split_tax))
-                time_stamps_ids[id_tax]   = time_stamps
-            return time_stamps_ids
+                self.old_taxonomy[id_tax]    = dict(zip(self.ordered_names, split_tax))
+                self.time_stamps_ids[id_tax] = time_stamps
             
     def remove_bad(self, tax_line, name):
         if tax_line[name] in self.bad_value:
             tax_line[name] = ''
         return tax_line[name]
-
-    # def remove_empty(self, tax_line):
-    #     return dict((rank_name, taxon) for rank_name, taxon in tax_line.items() if (taxon != ""))
-    # 
-    # def get_dups(self, new_tax_line, taxonomy_no_dup, tax_id):
-    #     if new_tax_line in taxonomy_no_dup.values():
-    #         [self.dup_ids[key].append(tax_id) for key in taxonomy_no_dup.keys() if (taxonomy_no_dup[key] == new_tax_line)]
-    #     else:
-    #         taxonomy_no_dup[tax_id] = new_tax_line
-    #     return taxonomy_no_dup
     
     def remove_empty_and_get_dups(self, taxonomy_with_wholes):
         taxonomy_no_dup = {}
         
         for tax_id, tax_line in taxonomy_with_wholes.items():                
-            # self.dup_ids[tax_id] = self.dup_ids.get(tax_id, []) # populate all keys
             new_tax_line    = {}
             rank_name       = "" 
             taxon           = ""            
@@ -139,8 +127,8 @@ class MyTaxonomy:
             # todo: create all values once: VALUES ("%s", "%s"), ("%s", "%s")...
             sql_taxa       = 'INSERT IGNORE INTO taxa_temp (taxon, rank) VALUES ("%s", "%s")' % (taxon, rank)
             # {'superkingdom': 'Archaea', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei'}
-            # print "sql_taxa = %s" % sql_taxa
-            shared.my_conn.execute_no_fetch(sql_taxa)    
+            print "sql_taxa = %s" % sql_taxa
+            # shared.my_conn.execute_no_fetch(sql_taxa)    
     
     def make_empty_taxa(self, my_dict):
         for name in self.ordered_names:
@@ -148,17 +136,18 @@ class MyTaxonomy:
                 my_dict[name] = ""
         return my_dict
     
-    def upload_new_taxonomy(self, key, value, time_stamps_ids):
+    def upload_new_taxonomy(self, key, value):
         # print time_stamps_ids
         # print key
         # print value
-        upload_taxa(value)
-        my_dict = make_empty_taxa(self.ordered_names, value)
+        # , self.time_stamps_ids[key]
+        self.upload_taxa(value)
+        my_dict = self.make_empty_taxa(value)
             
         sql_taxonomies = ""
-        sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, my_dict["superkingdom"], my_dict["phylum"], my_dict["class"], my_dict["orderx"], my_dict["family"], my_dict["genus"], my_dict["species"], my_dict["strain"], time_stamps_ids[0], time_stamps_ids[1])
-        # print "sql_taxonomies = %s" % sql_taxonomies
-        shared.my_conn.execute_no_fetch(sql_taxonomies)    
+        sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (key, my_dict["superkingdom"], my_dict["phylum"], my_dict["class"], my_dict["orderx"], my_dict["family"], my_dict["genus"], my_dict["species"], my_dict["strain"], self.time_stamps_ids[key][0], self.time_stamps_ids[key][1])
+        print "sql_taxonomies = %s" % sql_taxonomies
+        # shared.my_conn.execute_no_fetch(sql_taxonomies)    
 
     def update_taxa_ranks_ids(self):
         sql = """
@@ -308,7 +297,7 @@ class MyTaxonomy:
         start = time.time()
         print "start upload_new_taxonomy"
         for key, value in self.new_taxonomy.items():
-            self.new_taxonomy(key, value, time_stamps_ids[key])
+            self.upload_new_taxonomy(key, value)
         end = time.time()
         print end - start
 
@@ -436,7 +425,7 @@ class MyTaxonomy:
         tax_infile    = args.tax_infile
         start = time.time()
         print "start make_taxa_dict"
-        time_stamps_ids  = self.make_taxa_dict(tax_infile)
+        self.make_taxa_dict(tax_infile)
         print "self.old_taxonomy = %s" % self.old_taxonomy
         separated_species_taxonomy = {}
         end = time.time()
@@ -476,7 +465,16 @@ class MyTaxonomy:
             self.db_update()
         
         if args.taxonomy_check:
-            self.taxonomy_check()        
+            self.taxonomy_check()    
+
+#             ---------- temp test -------------
+        start = time.time()
+        print "start upload_new_taxonomy"
+        for key, value in self.new_taxonomy.items():
+            self.upload_new_taxonomy(key, value)
+        end = time.time()
+        print end - start
+                
     
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
