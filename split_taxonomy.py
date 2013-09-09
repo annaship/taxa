@@ -99,6 +99,7 @@ class MyTaxonomy:
         for tax_id, tax_line in taxonomy_with_wholes.items():    
             if tax_id not in self.dup_ids.keys():
                 self.dup_ids[tax_id] = []    
+            print self.dup_ids[tax_id]
             new_tax_line    = {}
             rank_name       = "" 
             taxon           = ""
@@ -406,24 +407,8 @@ class MyTaxonomy:
         'family': ["aceae"]
         }
         
-        # print terminals[rank_name]
         for term_name, terminal_list in terminals.items():
             return [True for terminal in terminal_list if taxon_name.endswith(terminal) and term_name != rank_name]
-            # for terminal in terminal_list:
-            #     if taxon_name.endswith(terminal) and term_name != rank_name:
-            #         return True
-            #     else:
-            #         return False
-        
-        
-
-    # def check_rank(self, rank_name, taxon_name):
-    #     return {
-    #         'phylum': self.is_phylum(taxon_name),
-    #         'class':  self.is_class(taxon_name),
-    #         'orderx': self.is_order(taxon_name),
-    #         'family': self.is_family(taxon_name),
-    #     }[rank_name]
         
     def taxonomy_check(self):
         for id_key, name_values in self.new_taxonomy.items():
