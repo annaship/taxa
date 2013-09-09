@@ -40,6 +40,7 @@ import argparse
 import sql_tables_class
 import shared
 import time
+from collections import defaultdict
 
 class MyTaxonomy:
     """
@@ -52,9 +53,9 @@ class MyTaxonomy:
     def __init__(self):
         self.ordered_names = "superkingdom", "phylum", "class", "orderx", "family", "genus", "species", "strain"
         self.bad_value     = "Fungi", "unculturedfungus", "unidentified", "sp", "sp.", "unculturedsoil_fungus", "unidentified_sp.", "unculturedcompost_fungus", "unculturedectomycorrhizal_fungus"
-        self.dup_ids       = {}
+        self.dup_ids       = defaultdict(list)
         self.old_taxonomy  = {}
-        self.new_taxonomy = {}
+        self.new_taxonomy  = {}
         
     def make_taxa_dict(self, tax_infile):
         time_stamps_ids = {}
@@ -97,7 +98,7 @@ class MyTaxonomy:
         taxonomy_no_dup = {}
         
         for tax_id, tax_line in taxonomy_with_wholes.items():                
-            self.dup_ids[tax_id] = self.dup_ids.get(tax_id, []) # populate all keys
+            # self.dup_ids[tax_id] = self.dup_ids.get(tax_id, []) # populate all keys
             new_tax_line    = {}
             rank_name       = "" 
             taxon           = ""            
