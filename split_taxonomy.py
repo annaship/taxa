@@ -400,18 +400,20 @@ class MyTaxonomy:
 
     def check_ranks(self, rank_name, taxon_name):
         terminals = {
-        'phylum': ["phyta", "mycota"]
-        'class': ["opsida", "phyceae", "mycetes"]
-        'orderx': ["ales"]
+        'phylum': ["phyta", "mycota"],
+        'class': ["opsida", "phyceae", "mycetes"],
+        'orderx': ["ales"],
         'family': ["aceae"]
         }
         
-        print terminals[rank_name]
-        for terminal in terminals[rank_name]:
-            if taxon_name.endswith(terminal):
-                return True
-            else:
-                return False
+        # print terminals[rank_name]
+        for term_name, terminal_list in terminals.items():
+            return [True for terminal in terminal_list if taxon_name.endswith(terminal) and term_name != rank_name]
+            # for terminal in terminal_list:
+            #     if taxon_name.endswith(terminal) and term_name != rank_name:
+            #         return True
+            #     else:
+            #         return False
         
         
 
@@ -424,11 +426,11 @@ class MyTaxonomy:
     #     }[rank_name]
         
     def taxonomy_check(self):
-        list_of_check_ranks = ['phylum', 'class', 'orderx', 'family']
         for id_key, name_values in self.new_taxonomy.items():
             for rank_name, taxon_name in name_values.items():     
-                print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
+                # print "rank_name = %s, taxon_name = %s" % (rank_name, taxon_name)
                 print self.check_ranks(rank_name, taxon_name)
+                # print "term_name = %s, terminal = %s, rank_name = %s, bad taxon_name = %s" % (term_name, terminal, rank_name, taxon_name)
 
                 
                 # if (rank_name in ('phylum', 'class', 'orderx', 'family')): 
