@@ -79,9 +79,9 @@ class MyTaxonomy:
                 self.time_stamps_ids[id_tax] = time_stamps
             
     def remove_bad(self, tax_line, name):
-        if tax_line[name] in self.bad_value:
-            tax_line[name] = ''
-        return tax_line[name]
+        if tax_line.get(name, "") in self.bad_value:
+            tax_line[name] = ""
+        return tax_line.get(name, "")
     
     def remove_empty_and_get_dups(self, taxonomy_with_wholes):
         taxonomy_no_dup = {}
@@ -98,9 +98,9 @@ class MyTaxonomy:
                 taxonomy_no_dup[tax_id] = new_tax_line            
         return taxonomy_no_dup
 
-    def remove_bad_from_end(self, taxononomy_with_empty):
+    def remove_bad_from_end(self, separated_species_taxonomy):
         taxonomy_with_wholes = {}
-        for tax_id, tax_line in taxononomy_with_empty.items():
+        for tax_id, tax_line in separated_species_taxonomy.items():
             for name in reversed(self.ordered_names[1:]): # don't touch superkingdom
                 res_taxa = self.remove_bad(tax_line, name)
                 if res_taxa != '':
@@ -140,15 +140,7 @@ class MyTaxonomy:
         return my_dict
     
     def upload_new_taxonomy(self, tax_id, taxon_dict):
-        # print time_stamps_ids
-        # print tax_id
-        # print taxon_dict
-        # 9
-        #         {'superkingdom': 'Archaea', 'family': 'Pyrodictiaceae', 'class': 'Thermoprotei', 'phylum': 'Crenarchaeota', 'orderx': 'Desulfurococcales', 'genus': 'Geogemma', 'species': 'pacifica'}
-        self.upload_taxa(taxon_dict)
-        # my_dict = self.make_empty_taxa(taxon_dict)
-            
-        sql_taxonomies = ""
+        self.upload_taxa(taxon_dict)            
         sql_taxonomies = 'INSERT IGNORE INTO taxonomies_sep (id, superkingdom, phylum, class, orderx, family, genus, species, strain, created_at, updated_at) VALUES (%s, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", %s, %s)' % (tax_id, taxon_dict.get("superkingdom", ""), taxon_dict.get("phylum", ""), taxon_dict.get("class", ""), taxon_dict.get("orderx", ""), taxon_dict.get("family", ""), taxon_dict.get("genus", ""), taxon_dict.get("species", ""), taxon_dict.get("strain", ""), self.time_stamps_ids[tax_id][0], self.time_stamps_ids[tax_id][1])
         print "sql_taxonomies = %s" % sql_taxonomies
         # shared.my_conn.execute_no_fetch(sql_taxonomies)    
@@ -439,20 +431,12 @@ class MyTaxonomy:
         print "start separate_binomial_name"
         for tax_id, tax_line in self.old_taxonomy.items():
             separated_species_taxonomy[tax_id] = self.separate_binomial_name(tax_line)
-        taxononomy_with_empty = {}
-        end = time.time()
-        print end - start
-
-        start = time.time()
-        print "start make_empty_taxa"
-        for key, value in separated_species_taxonomy.items():
-            taxononomy_with_empty[key] = self.make_empty_taxa(value)    
         end = time.time()
         print end - start
 
         start = time.time()
         print "start remove_bad_from_end"
-        taxonomy_with_wholes = self.remove_bad_from_end(taxononomy_with_empty)
+        taxonomy_with_wholes = self.remove_bad_from_end(separated_species_taxonomy)
         end = time.time()
         print end - start
 
