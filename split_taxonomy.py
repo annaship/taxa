@@ -53,9 +53,9 @@ class MyTaxonomy:
         self.ordered_names = "superkingdom", "phylum", "class", "orderx", "family", "genus", "species", "strain"
         self.bad_value     = "Fungi", "unculturedfungus", "unidentified", "sp", "sp.", "unculturedsoil_fungus", "unidentified_sp.", "unculturedcompost_fungus", "unculturedectomycorrhizal_fungus"
         self.dup_ids       = {}
+        self.old_taxonomy  = {}
 
     def make_taxa_dict(self, tax_infile):
-        taxonomy        = {}
         time_stamps_ids = {}
     
         # # id,"taxonomy","created_at","updated_at"
@@ -74,9 +74,9 @@ class MyTaxonomy:
                 # print time_stamps
                 split_tax      = tax_line_split[1].strip('"').split(';')
         
-                taxonomy[id_tax] = dict(zip(self.ordered_names, split_tax))
+                self.old_taxonomy[id_tax] = dict(zip(self.ordered_names, split_tax))
                 time_stamps_ids[id_tax] = time_stamps
-            return taxonomy, time_stamps_ids
+            return time_stamps_ids
             
     def remove_bad(self, tax_line, name):
         if tax_line[name] in self.bad_value:
@@ -105,9 +105,9 @@ class MyTaxonomy:
             taxonomy_no_dup = self.get_dups(new_tax_line, taxonomy_no_dup, tax_id)        
         return taxonomy_no_dup
 
-    def remove_bad_from_end(self, old_taxonomy):
+    def remove_bad_from_end(self, taxononomy_with_empty):
         taxonomy_with_wholes = {}
-        for tax_id, tax_line in old_taxonomy.items():
+        for tax_id, tax_line in taxononomy_with_empty.items():
             for name in reversed(self.ordered_names[1:]): # don't touch superkingdom
                 res_taxa = self.remove_bad(tax_line, name)
                 if res_taxa != '':
@@ -194,8 +194,7 @@ class MyTaxonomy:
     # Subclass  -idae   (Elusimicrobidae)
     # Class -ia Elusimicrobia
     # Phylum    see text    Elusimicrobia
-    
-        
+            
     def upload_new_taxonomy(self, key, value, time_stamps_ids):
         # print time_stamps_ids
         # print key
@@ -390,21 +389,27 @@ class MyTaxonomy:
         end = time.time()
         print end - start
         
-    
-    
+    def taxonomy_check(self):
+        self.is_phylum(name)
+        self.is_class(name)
+        self.is_order(name)
+        self.is_family(name)
+        self.has_spaces(name)
+        self.species_initial(name)
+        
     def process(self, args):
         tax_infile    = args.tax_infile
         start = time.time()
         print "start make_taxa_dict"
-        old_taxonomy, time_stamps_ids  = self.make_taxa_dict(tax_infile)
-        # print "old_taxonomy = %s" % old_taxonomy
+        time_stamps_ids  = self.make_taxa_dict(tax_infile)
+        print "self.old_taxonomy = %s" % self.old_taxonomy
         separated_species_taxonomy = {}
         end = time.time()
         print end - start
     
         start = time.time()
         print "start separate_binomial_name"
-        for tax_id, tax_line in old_taxonomy.items():
+        for tax_id, tax_line in self.old_taxonomy.items():
             separated_species_taxonomy[tax_id] = self.separate_binomial_name(tax_line)
         taxononomy_with_empty = {}
         end = time.time()
@@ -419,7 +424,7 @@ class MyTaxonomy:
 
         start = time.time()
         print "start remove_bad_from_end"
-        taxonomy_with_wholes     = self.remove_bad_from_end(taxononomy_with_empty)
+        taxonomy_with_wholes = self.remove_bad_from_end(taxononomy_with_empty)
         end = time.time()
         print end - start
 
@@ -429,12 +434,14 @@ class MyTaxonomy:
         end = time.time()
         print end - start
     
-        # print "taxonomy_no_dup = %s" % taxonomy_no_dup
+        print "taxonomy_no_dup = %s" % taxonomy_no_dup
         print "self.dup_ids = %s" % self.dup_ids
     
         if args.db_update:
-            db_update()
+            self.db_update()
         
+        if args.taxonomy_check:
+            self.taxonomy_check()        
     
 if __name__ == '__main__':
     shared.my_conn = sql_tables_class.MyConnection('localhost', 'vamps2')
@@ -444,6 +451,8 @@ if __name__ == '__main__':
                         help = 'CSV file with taxonomy - import from env454.taxonomy (id,"taxonomy","created_at","updated_at")')   
     parser.add_argument('--db_update', '-u', required = False, dest = 'db_update', default = False,
                         help = 'Update the db')
+    parser.add_argument('--tax_check', '-t', required = False, dest = 'taxonomy_check', default = False,
+                        help = 'Check taxonomic names and get list of suspicious names')
                                                  
     args = parser.parse_args() 
 
