@@ -124,9 +124,15 @@ def get_species(sc_name)
   RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names="+ sc_name +"&resolve_once=false&data_source_ids=4|5"))  
 end
 
+# not used, check if rank only in one taxonomy
 def get_2tax_rank(res, rank_check, taxonomy_name)
   return true if ((res["classification_path_ranks"].split('|')[-1] == rank_check) && (res["data_source_title"] == taxonomy_name)) 
 end
+
+def is_tax_rank(res, rank_check)
+  return true if (res["classification_path_ranks"].split('|')[-1] == rank_check) 
+end
+
 
 def to_print_NCBI_IF(to_print, parsed)
   begin  
@@ -166,7 +172,8 @@ def circle_json(dd, rank_check, dbh)
 
     unless dd["results"].nil?
       sort_by_taxonomy_ids(dd["results"]).each do |res| 
-        is_ncbi_class = true if (get_2tax_rank(res, rank_check, "NCBI") == true || get_2tax_rank(res, rank_check, "GBIF Backbone Taxonomy") == true)
+        is_ncbi_class = true if is_tax_rank(res, rank_check) == true
+        # is_ncbi_class = true if (get_2tax_rank(res, rank_check, "NCBI") == true || get_2tax_rank(res, rank_check, "GBIF Backbone Taxonomy") == true)
         # is_ncbi_class = true if ((res["classification_path_ranks"].split('|')[-1] == rank_check) && (res["data_source_title"] == "NCBI"))
 
         current_tax_str = res["classification_path"]
