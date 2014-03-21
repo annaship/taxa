@@ -152,10 +152,21 @@ end
 
 
 def circle_json(dd, rank_check, dbh)
+    # start = Time.now
     current_silva_r, current_silva_sc_name = current_silva_res(dd["supplied_name_string"], dbh, rank_check)
-    parsed  = JSON.parse(get_species(current_silva_sc_name))
+    # finish = Time.now
+    # diff = finish - start
+    # print "current_silva_res: "
+    # p diff.round(2)
     
-    is_ncbi_class = false
+    # start = Time.now
+    parsed  = JSON.parse(get_species(current_silva_sc_name))
+    # finish = Time.now
+    # diff = finish - start
+    # print "parse(get_species...: "
+    # p diff.round(2)
+    
+    is_correct_rank = false
 
     to_print  = "*" * 10
     to_print += "\n"
@@ -163,31 +174,55 @@ def circle_json(dd, rank_check, dbh)
     to_print += "\n"  
     to_print += current_silva_r unless current_silva_r.nil?  
     to_print += "\n"
+
+    # start = Time.now
     to_print = to_print_NCBI_IF(to_print, parsed)
+    # finish = Time.now
+    # diff = finish - start
+    # print "to_print_NCBI_IF...: "
+    # p diff.round(2)
+    
     to_print += "\n"
     to_print += "\n"
 
     current_tax_str  = ""
     previous_tax_str = ""
 
+    # start1 = Time.now
+    # p "-=" * 10
+
     unless dd["results"].nil?
       sort_by_taxonomy_ids(dd["results"]).each do |res| 
-        is_ncbi_class = true if is_tax_rank(res, rank_check) == true
-        # is_ncbi_class = true if (get_2tax_rank(res, rank_check, "NCBI") == true || get_2tax_rank(res, rank_check, "GBIF Backbone Taxonomy") == true)
-        # is_ncbi_class = true if ((res["classification_path_ranks"].split('|')[-1] == rank_check) && (res["data_source_title"] == "NCBI"))
+        # print "is_correct_rank = "
+        # p is_correct_rank
+        if is_correct_rank == false
+          # p "FROM INSIDE IF"
+          # start = Time.now
+          is_correct_rank = true if is_tax_rank(res, rank_check) == true
+          # finish = Time.now
+          # diff = finish - start
+          # print "is_tax_rank...: "
+          # p diff.round(2)
+          # is_correct_rank = true if (get_2tax_rank(res, rank_check, "NCBI") == true || get_2tax_rank(res, rank_check, "GBIF Backbone Taxonomy") == true)
+          # is_correct_rank = true if ((res["classification_path_ranks"].split('|')[-1] == rank_check) && (res["data_source_title"] == "NCBI"))
 
-        current_tax_str = res["classification_path"]
+          current_tax_str = res["classification_path"]
 
-        to_print += make_to_print_csv(res) if current_tax_str != previous_tax_str
-        to_print.sub! 'NCBI;;', 'NCBI;'
+          to_print += make_to_print_csv(res) if current_tax_str != previous_tax_str
+          to_print.sub! 'NCBI;;', 'NCBI;'
+        end
 
         previous_tax_str = current_tax_str
       end
     end
     # p to_print
+    # finish1 = Time.now
+    # diff1 = finish1 - start1
+    # print 'unless dd["results"].nil...: '
+    # p diff1.round(2)
     
 
-  return to_print, is_ncbi_class
+  return to_print, is_correct_rank
 end
   
 begin
@@ -208,8 +243,8 @@ begin
   # add headers to csv
   file_out.write(";Kingdom;Phylum;Class;Order;Family;Genus;Species\n")
   parsed["data"].each do |dd|
-    to_print, is_ncbi_class = circle_json(dd, rank_check, dbh)
-    unless is_ncbi_class
+    to_print, is_correct_rank = circle_json(dd, rank_check, dbh)
+    unless is_correct_rank
       n += 1
       file_out.write(n)
       # file_out.write("\n")
