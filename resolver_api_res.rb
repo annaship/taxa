@@ -124,6 +124,27 @@ def get_species(sc_name)
   RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names="+ sc_name +"&resolve_once=false&data_source_ids=4|5"))  
 end
 
+def get_2tax_rank(res, rank_check, taxonomy_name)
+  return true if ((res["classification_path_ranks"].split('|')[-1] == rank_check) && (res["data_source_title"] == taxonomy_name)) 
+end
+
+def to_print_NCBI_IF(to_print, parsed)
+  begin  
+    unless (parsed["data"].nil? or parsed["data"][0].nil? or parsed["data"][0]["results"].nil?)
+      to_print += make_to_print_csv(parsed["data"][0]["results"][0])       
+      to_print += make_to_print_csv(parsed["data"][0]["results"][1]) unless parsed["data"][0]["results"][1].nil?      
+    end
+  rescue Exception => e  
+    p "*" * 10
+    puts 'I am rescued. parsed = '  
+    p parsed
+    puts e.message  
+    puts e.backtrace.inspect 
+  end    
+  return to_print  
+end
+
+
 def circle_json(dd, rank_check, dbh)
     current_silva_r, current_silva_sc_name = current_silva_res(dd["supplied_name_string"], dbh, rank_check)
     parsed  = JSON.parse(get_species(current_silva_sc_name))
@@ -136,18 +157,7 @@ def circle_json(dd, rank_check, dbh)
     to_print += "\n"  
     to_print += current_silva_r unless current_silva_r.nil?  
     to_print += "\n"
-    begin  
-      unless (parsed["data"].nil? or parsed["data"][0].nil? or parsed["data"][0]["results"].nil?)
-        to_print += make_to_print_csv(parsed["data"][0]["results"][0])       
-        to_print += make_to_print_csv(parsed["data"][0]["results"][1]) unless parsed["data"][0]["results"][1].nil?      
-      end
-    rescue Exception => e  
-      p "*" * 10
-      puts 'I am rescued. parsed = '  
-      p parsed
-      puts e.message  
-      puts e.backtrace.inspect 
-    end      
+    to_print = to_print_NCBI_IF(to_print, parsed)
     to_print += "\n"
     to_print += "\n"
 
@@ -155,8 +165,9 @@ def circle_json(dd, rank_check, dbh)
     previous_tax_str = ""
 
     unless dd["results"].nil?
-      sort_by_taxonomy_ids(dd["results"]).each do |res|      
-        is_ncbi_class = true if ((res["classification_path_ranks"].split('|')[-1] == rank_check) && (res["data_source_title"] == "NCBI"))
+      sort_by_taxonomy_ids(dd["results"]).each do |res| 
+        is_ncbi_class = true if (get_2tax_rank(res, rank_check, "NCBI") == true || get_2tax_rank(res, rank_check, "GBIF Backbone Taxonomy") == true)
+        # is_ncbi_class = true if ((res["classification_path_ranks"].split('|')[-1] == rank_check) && (res["data_source_title"] == "NCBI"))
 
         current_tax_str = res["classification_path"]
 
