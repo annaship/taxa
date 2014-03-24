@@ -150,6 +150,23 @@ def to_print_NCBI_IF(to_print, parsed)
   return to_print  
 end
 
+def get_genus(dd, rank_check) 
+  file_out_genus_name = "genus_form_" + rank_check.to_s
+  file_out_genus      = File.open(file_out_genus_name, "a")
+  add_to_genus        = []
+  p "FROM get_genus:"
+  # p dd
+  unless dd["results"].nil?  
+    dd["results"].each do |res| 
+      if (res["classification_path_ranks"].split('|')[-1] == "genus") 
+        add_to_genus << dd["supplied_name_string"]
+      end
+    end
+  end
+  add_to_genus.uniq!
+  file_out_genus.write(add_to_genus.join() + "\n")     
+  file_out_genus.close unless file_out_genus == nil  
+end
 
 def circle_json(dd, rank_check, dbh)
     # start = Time.now
@@ -248,7 +265,8 @@ begin
       n += 1
       file_out.write(n)
       # file_out.write("\n")
-      file_out.write(to_print)    
+      file_out.write(to_print)   
+      get_genus(dd, rank_check) 
     end
   end
 # --- main ends ---
@@ -262,5 +280,4 @@ begin
     dbh.disconnect if dbh    
 end
 
-file_out.close unless file_out == nil
-
+file_out.close       unless file_out       == nil
