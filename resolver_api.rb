@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 # file with names separated by newline as an argument
 require 'rest-client'
-require 'uri'
+require 'open-uri'
+
+# puts RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names=Plantago major&resolve_once=false&data_source_ids=1|3"))
+
 
 # puts "GET request\n"
 # puts RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names=Plantago major|Monohamus galloprovincialis|Felis concolor&resolve_once=false&data_source_ids=1|3"))
