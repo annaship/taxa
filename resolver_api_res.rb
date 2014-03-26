@@ -4,6 +4,7 @@ require "json"
 require "dbi"
 require 'rest-client'
 require 'uri'
+require 'open-uri'
 
 # gem install dbd-mysql
 
@@ -121,7 +122,17 @@ def current_silva_res(supplied_name_string, dbh, rank_check)
 end
 
 def get_species(sc_name)
-  RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names="+ sc_name +"&resolve_once=false&data_source_ids=4|5"))  
+  begin  
+    return RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names="+ sc_name +"&resolve_once=false&data_source_ids=4|5"))  
+  rescue Exception => e  
+    p "*" * 10
+    puts 'I am rescued at get_species. sc_name = '  
+    p sc_name
+    puts e.message  
+    puts e.backtrace.inspect 
+    return nil
+  end    
+    
 end
 
 # not used, check if rank only in one taxonomy
@@ -151,6 +162,7 @@ def to_print_NCBI_IF(to_print, parsed)
 end
 
 def get_genus(dd, rank_check) 
+<<<<<<< HEAD
   file_out_genus_name = "genus_form_" + rank_check.to_s
   file_out_genus      = File.open(file_out_genus_name, "w")
   print "FROM get_genus:"
@@ -160,6 +172,31 @@ def get_genus(dd, rank_check)
   end
   file_out_genus.close unless file_out_genus == nil  
 end
+=======
+  file_out_genus_name = "genus_from_" + rank_check.to_s
+  file_out_genus      = File.open(file_out_genus_name, "a")
+  add_to_genus        = []
+  # p dd
+  unless dd["results"].nil?  
+    dd["results"].each do |res| 
+      if (res["classification_path_ranks"].split('|')[-1] == "genus") 
+        add_to_genus << dd["supplied_name_string"]
+      end
+    end
+  end
+  add_to_genus.uniq!
+  genus_name = add_to_genus.join()
+  # make_genus('order', genus_name)
+  file_out_genus.write(add_to_genus.join() + "\n")     
+  file_out_genus.close unless file_out_genus == nil  
+end
+
+def make_genus(rank, genus_name)
+  query = 'UPDATE refssu_115_from_file JOIN refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP) SET taxslv_silva_modified = replace(taxslv_silva_modified, "' + orig_string + '", "' + orig_string_part + ';Unassigned;Unassigned;' + genus_name + '"), taxslv_silva_modification = concat(taxslv_silva_modification, "; ' + genus_name + ' (genus)") WHERE taxslv_silva_modified like "' + orig_string + '%" AND deleted = 0 AND taxonomy = "" 
+  '
+  p query
+end
+>>>>>>> 2dde1184357d83070852907f03a025b5d7aac458
 
 def circle_json(dd, rank_check, dbh)
     # start = Time.now
@@ -170,7 +207,7 @@ def circle_json(dd, rank_check, dbh)
     # p diff.round(2)
     
     # start = Time.now
-    parsed  = JSON.parse(get_species(current_silva_sc_name))
+    parsed  = JSON.parse(get_species(current_silva_sc_name)) if get_species(current_silva_sc_name)
     # finish = Time.now
     # diff = finish - start
     # print "parse(get_species...: "
