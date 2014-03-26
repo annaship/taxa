@@ -162,17 +162,6 @@ def to_print_NCBI_IF(to_print, parsed)
 end
 
 def get_genus(dd, rank_check) 
-<<<<<<< HEAD
-  file_out_genus_name = "genus_form_" + rank_check.to_s
-  file_out_genus      = File.open(file_out_genus_name, "w")
-  print "FROM get_genus:"
-  p dd
-  if (res["classification_path_ranks"].split('|')[-1] == "genus") 
-    file_out_genus.write(dd["supplied_name_string"])   
-  end
-  file_out_genus.close unless file_out_genus == nil  
-end
-=======
   file_out_genus_name = "genus_from_" + rank_check.to_s
   file_out_genus      = File.open(file_out_genus_name, "a")
   add_to_genus        = []
@@ -196,7 +185,6 @@ def make_genus(rank, genus_name)
   '
   p query
 end
->>>>>>> 2dde1184357d83070852907f03a025b5d7aac458
 
 def circle_json(dd, rank_check, dbh)
     # start = Time.now
