@@ -38,16 +38,15 @@ class Entry:
 
     def print_bad_gen(self):
         to_check = ""
-        if (self.number_of_ranks == 6 and self.last_rank_from_full_name != self.genus_name):
+        if (self.number_of_ranks == 6 and self.last_rank_from_full_name != self.genus_name and self.is_genus()):
             # print "BAD: number_of_ranks = %s, last_rank_from_full_name = %s, genus_name = %s\nself.full_name = %s\nself.genus_species = %s\n" % (self.number_of_ranks, self.last_rank_from_full_name, self.genus_name, self.full_name, self.genus_species)    
-            to_check = self.full_name + "," + self.genus_species
+            to_check = self.full_name + "," + self.genus_species + "," + self.genus_name
         return to_check
         
     def gen5(self):
         to_check = ""
-        if (self.number_of_ranks == 5): 
-            if self.is_genus():        
-                to_check = self.full_name + "," + self.genus_species + "," + self.genus_name
+        if (self.number_of_ranks == 5 and self.is_genus()): 
+            to_check = self.full_name + "," + self.genus_species + "," + self.genus_name
         return to_check
         
 
