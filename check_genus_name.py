@@ -8,8 +8,8 @@ import re
 
 class Entry:
     def __init__(self, line):
-        self.full_name                = line.split(",")[0]
-        self.genus_species            = line.split(",")[1]
+        self.full_name                = line.split(",")[0].strip()
+        self.genus_species            = line.split(",")[1].strip()
 
         self.number_of_ranks          = len(self.full_name.split(";"))
         self.last_rank_from_full_name = self.full_name.split(";")[-1]
@@ -32,8 +32,11 @@ class Entry:
             print "GOOD: number_of_ranks = %s, last_rank_from_full_name = %s, genus_name = %s\nself.full_name = %s\ngenus_species = %s\n" % (self.number_of_ranks, self.last_rank_from_full_name, self.genus_name, self.full_name, self.genus_species)    
             print "HERE: self.is_species()  = %s\n" % self.is_species() 
             if self.is_species():
-                print "NEW name = "
-                print self.full_name + ";" + self.species_name
+                new_name = self.full_name + ";" + self.species_name
+                print "NEW name = %s\n" % new_name                
+                
+                query = 'UPDATE refssu_115_from_file SET taxonomy = "%s", taxslv_silva_modification = concat(taxslv_silva_modification, "; add species name from fullname"), taxonomy_source = "taxslv_silva_modification" WHERE taxslv_silva_modified = "%s" and silva_fullname = "%s" AND deleted = 0 AND taxonomy = "" ' % (new_name, self.full_name, self.genus_species)
+                print "query:\n", query
                 print "=" * 10
 
     def print_bad_gen(self):
