@@ -58,26 +58,16 @@ def print_good_species_into_file():
     f.write(all_queries_str)
     f.close()
 
-def print_check_species_into_file():
+def print_check_species_into_csv(list_name, filename_base):
+    check_species_file_name = filename_base + ".csv"
     f = open(check_species_file_name, 'w')
     f.write("taxslv_silva_modified,silva_fullname,genus_name")
-    all_to_check_str = "\n".join(map(str, set(all_to_check)))    
-    f.write(all_to_check_str)
+    list_name_str = "\n".join(map(str, set(list_name)))    
+    f.write(list_name_str)
     f.close()
-
-def print_conflict_name_into_file():
-    f = open(conflict_name_file_name, 'w')
-    f.write("taxslv_silva_modified,silva_fullname")
-    conflict_name_str = "\n".join(map(str, set(conflict_name)))    
-    f.write(conflict_name_str)
-    f.close()
-
-
 
 fname                   = "mod_species3-27-14.csv"
 add_species_file_name   = "add_species.sql"
-check_species_file_name = "check_species.csv"
-conflict_name_file_name = "conflict_name.csv"
 all_queries             = []
 all_to_check            = []
 conflict_name           = []
@@ -104,5 +94,7 @@ for line in content:
         raise
     
 print_good_species_into_file()
-print_check_species_into_file()
-print_conflict_name_into_file()
+print_check_species_into_csv(all_to_check, 'all_to_check')
+print_check_species_into_csv(conflict_name, 'conflict_name')
+# print_check_species_into_file()
+# print_conflict_name_into_file()
