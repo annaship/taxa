@@ -41,28 +41,37 @@ end
 def pair_name_rank(res)
   # p "HERE"
   # p res["classification_path"]
-  classification_path       = res["classification_path"].split("|")
-  classification_path_ranks = res["classification_path_ranks"].split("|")
-  arr_combined = classification_path.zip(classification_path_ranks).flatten.compact
-  result = arr_combined.each_slice(2). # get every two elements
-      map { |top| "#{top.first} (#{top.last})" unless (top.first == "" and top.last == "") }.  # create a string for each pair
-      join(';')    # join them
-      # => "Bacteria (kingdom);Verrucomicrobia (phylum);Verrucomicrobiae (class)"
+  unless res["classification_path"].nil?
+    classification_path       = res["classification_path"].split("|")
+    classification_path_ranks = res["classification_path_ranks"].split("|")
+    arr_combined = classification_path.zip(classification_path_ranks).flatten.compact
+    result = arr_combined.each_slice(2). # get every two elements
+        map { |top| "#{top.first} (#{top.last})" unless (top.first == "" and top.last == "") }.  # create a string for each pair
+        join(';')    # join them
+        # => "Bacteria (kingdom);Verrucomicrobia (phylum);Verrucomicrobiae (class)"
       
-  return result  
+    return result  
+  end
 end
 
 def make_to_print_csv(res)
   to_print = res["data_source_title"]
   to_print += ";"  
-  to_print += pair_name_rank(res)
+  to_print += pair_name_rank(res) unless pair_name_rank(res).nil?
   to_print += "\n"
   return to_print
 end
 
 def sort_by_taxonomy_ids(results)
   # sort by taxonomy_ids in interest
-  results.sort_by { |element| [4, 11, 5, 8, 9, 1].index(element["data_source_id"]) }
+  begin  
+    return results.sort_by { |element| [4, 11, 5, 8, 9, 1].index(element["data_source_id"])} 
+  rescue Exception => e  
+    return results
+    print "sort_by_taxonomy_ids failed: "
+    puts e.message  
+    puts e.backtrace.inspect 
+  end  
 end
 
 
