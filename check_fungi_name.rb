@@ -46,27 +46,19 @@ class GenusName
   
   def initialize
     @genus_name            = ""
+    @taxslv_silva_modified = ""
+    @refhvr_its1           = ""
   end
   
-  def taxslv_silva_modified=(value)
-    @taxslv_silva_modified = value[0] if value.class == Array
-  end
+  # def taxslv_silva_modified=(value)
+  #   @taxslv_silva_modified = value[0] if value.class == Array
+  # end
+  # 
+  # def refhvr_its1=(value)
+  #   @refhvr_its1 = value[0] if value.class == Array
+  # end
   
-  def refhvr_its1=(value)
-    @refhvr_its1 = value[0] if value.class == Array
-  end
   
-  
-  def make_taxslv_silva_modified_query()
-    query = 
-    "SELECT DISTINCT taxslv_silva_modified 
-        FROM env454.refssu_115_from_file 
-        JOIN env454.refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP)
-        WHERE family = '#{@genus_name}'
-        AND deleted = 0
-        AND taxonomy = '';
-    "
-  end
   
   def make_refhvr_its_query()
     query = "SELECT DISTINCT taxonomy FROM env454.refhvr_its1 JOIN env454.taxonomy USING(taxonomy_id) WHERE taxonomy REGEXP '[[:<:]]#{@genus_name}[[:>:]]' limit 1;"
@@ -102,7 +94,18 @@ def run_query(dbh, query)
   sth.execute()
   sth.each {|row| query_result << row.to_a }
   sth.finish
-  return query_result[0]
+  return query_result
+end
+
+def make_taxslv_silva_modified_query(genus_names)
+  query = 
+  "SELECT DISTINCT taxslv_silva_modified 
+      FROM env454.refssu_115_from_file 
+      JOIN env454.refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP)
+      WHERE family in (#{genus_names})
+      AND deleted = 0
+      AND taxonomy = '';
+  "
 end
 
 
@@ -111,19 +114,32 @@ begin
   mysql_read_default_file="~/.my.cnf"
   dsn = "DBI:Mysql:host=newbpcdb2;mysql_read_default_group=client"
   dbh = DBI.connect(dsn,nil,nil)
-
-  file_in_name = use_args()
-  contents = File.readlines(file_in_name)
+  contents = ""
   
-  contents.each do |line|
-    instance = GenusName.new
-    instance.genus_name            = line.strip
-    instance.taxslv_silva_modified = run_query(dbh, instance.make_taxslv_silva_modified_query())
-    instance.refhvr_its1           = run_query(dbh, instance.make_refhvr_its_query())
-    update_query                   = instance.make_update_query() unless instance.refhvr_its1.nil?
-    
- file_out = File.open("update_fung_genus.sql", "a")
- file_out.write(update_query)
+  file_in_name = use_args()
+  # contents = File.readlines(file_in_name)
+  
+  File.readlines(file_in_name).each do |line|
+    contents += line.strip
+  end
+  print "contents = "
+  p contents
+  taxslv_silva_modified_query =  make_taxslv_silva_modified_query(contents)
+ print "taxslv_silva_modified_query = " 
+ p taxslv_silva_modified_query
+  res = run_query(dbh, make_taxslv_silva_modified_query(contents))
+ p res
+ # [["Eukarya;Fungi_Zygomycota;Unassigned;Mucorales;Actinomucor"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Incertae_sedis;Ambomucor"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Polychytriales;Arkaya"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Asterotremella"], ["Eukarya;Fungi_Zygomycota;Unassigned;Mucorales;Backusella"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Biatoropsis"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Chytridiales;Blyttiomyces"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Rhizophydiales;Boothiomyces"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Bullera"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Bulleromyces"]]
+  
+  # contents.each do |line|
+  #   instance = GenusName.new
+  #   instance.genus_name            = line.strip
+    # instance.taxslv_silva_modified = run_query(dbh, instance.make_taxslv_silva_modified_query())
+ #    instance.refhvr_its1           = run_query(dbh, instance.make_refhvr_its_query())
+ #    update_query                   = instance.make_update_query() unless instance.refhvr_its1.nil?
+ #    
+ # file_out = File.open("update_fung_genus.sql", "a")
+ # file_out.write(update_query)
     
     
     # p "+" * 10
@@ -136,7 +152,7 @@ begin
     # rescue StandardError => e
     #   p e
     # end
-  end
+  # end
   # file_out.close unless file_out == nil
 
 # --- main ends ---
