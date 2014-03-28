@@ -60,9 +60,6 @@ class GenusName
   
   
   
-  def make_refhvr_its_query()
-    query = "SELECT DISTINCT taxonomy FROM env454.refhvr_its1 JOIN env454.taxonomy USING(taxonomy_id) WHERE taxonomy REGEXP '[[:<:]]#{@genus_name}[[:>:]]' limit 1;"
-  end
     
   def make_update_query()
     query = 
@@ -108,6 +105,20 @@ def make_taxslv_silva_modified_query(genus_names)
   "
 end
 
+def make_refhvr_its_query(genus_names_arr)
+  # print "genus_names from 1 = "
+  # p genus_names
+  # genus_names_arr = genus_names.split(",")
+  # print "genus_names_arr from 1 = "
+  # p genus_names_arr
+  query = "SELECT DISTINCT taxonomy FROM env454.refhvr_its1 JOIN env454.taxonomy USING(taxonomy_id) WHERE "
+  genus_names_arr[0...-1].each do |genus_name|
+    query += " taxonomy REGEXP '[[:<:]]#{genus_name.tr("'", "")}[[:>:]]' OR "
+  end
+  query += "taxonomy REGEXP '[[:<:]]#{genus_names_arr[-1].tr("'", "")}[[:>:]]';"
+  return query
+end
+
 
 begin
   n = -1
@@ -125,11 +136,27 @@ begin
   print "contents = "
   p contents
   taxslv_silva_modified_query =  make_taxslv_silva_modified_query(contents)
- print "taxslv_silva_modified_query = " 
- p taxslv_silva_modified_query
-  res = run_query(dbh, make_taxslv_silva_modified_query(contents))
- p res
+ # print "taxslv_silva_modified_query = " 
+ # p taxslv_silva_modified_query
+  taxslv_silva_modified_res = run_query(dbh, make_taxslv_silva_modified_query(contents))
+ # p res
+ 
+ 
+ contents_arr = 
+ contents_arr = contents.split(",")
+ print "contents_arr from 2 = "
+ p contents_arr
+ 
+ 
+ refhvr_its_res_query =  make_refhvr_its_query(contents_arr)
+  refhvr_its_res            = run_query(dbh, refhvr_its_res_query)
+  p "refhvr_its_res = "
+  p refhvr_its_res
+ 
  # [["Eukarya;Fungi_Zygomycota;Unassigned;Mucorales;Actinomucor"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Incertae_sedis;Ambomucor"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Polychytriales;Arkaya"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Asterotremella"], ["Eukarya;Fungi_Zygomycota;Unassigned;Mucorales;Backusella"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Biatoropsis"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Chytridiales;Blyttiomyces"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Rhizophydiales;Boothiomyces"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Bullera"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Bulleromyces"]]
+  
+  # [["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Rhizophydiales;Terramycetaceae;Boothiomyces"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Rhizophydiales;Terramycetaceae;Boothiomyces;macroporosum"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Mucoraceae;Actinomucor"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Mucoraceae;Actinomucor;elegans"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Biatoropsis;usnearum"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Bullera"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Bullera;arundinariae"],  ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Bulleromyces;albus"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Trichosporonales;Trichosporonaceae;Asterotremella"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Trichosporonales;Trichosporonaceae;Asterotremella;albida"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Backusellaceae;Backusella;circina"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Backusellaceae;Backusella;indica"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Backusellaceae;Backusella;variabilis"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Incertae_sedis;Ambomucor"]]
+  
   
   # contents.each do |line|
   #   instance = GenusName.new
