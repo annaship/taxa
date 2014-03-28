@@ -162,19 +162,23 @@ begin
     p instance.genus_name
     
     instance.taxslv_silva_modified = taxslv_silva_modified_res.select {|a| a[0].split(";").include?(instance.genus_name) }
-    print "instance.taxslv_silva_modified = "
-    p instance.taxslv_silva_modified
+    # print "instance.taxslv_silva_modified = "
+    # p instance.taxslv_silva_modified
     
-    # taxslv_silva_modified_res.map {|a| p a.include("Actinomucor") }
-    # taxslv_silva_modified_res.select{ |user, flag| user.id == 2}
-    # taxslv_silva_modified_res.each do |taxslv_silva_modified|
-    #   print "taxslv_silva_modified = "
-    #   p taxslv_silva_modified
-    #   multi_array.map {|a| a & numbers_looking_to_match }
-    #   
-    #   
-    # end
-    # instance.taxslv_silva_modified = run_query(dbh, instance.make_taxslv_silva_modified_query())
+    instance.refhvr_its1 = refhvr_its_res.select {|a| a[0].split(";")[-1] == instance.genus_name } 
+    if instance.refhvr_its1.length == 0
+      refhvr_its1 = refhvr_its_res.select {|a| a[0].split(";")[-2] == instance.genus_name }
+      if refhvr_its1.length != 0
+        print "!!! refhvr_its1 = "
+        p refhvr_its1
+        instance.refhvr_its1 = refhvr_its1[0][0].split(";")[0..-2].join(";") unless refhvr_its1.nil?
+      end
+    end
+    print "instance.refhvr_its1 = "
+    p instance.refhvr_its1
+    p instance.refhvr_its1.length
+    
+    
  #    instance.refhvr_its1           = run_query(dbh, instance.make_refhvr_its_query())
  #    update_query                   = instance.make_update_query() unless instance.refhvr_its1.nil?
  #    
