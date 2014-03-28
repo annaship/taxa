@@ -45,9 +45,16 @@ class GenusName
   
   def initialize
     @genus_name            = ""
-    @taxslv_silva_modified = ""
-    @refhvr_its1           = ""
   end
+  
+  def taxslv_silva_modified=(value)
+    @taxslv_silva_modified = value[0] if value.class == Array
+  end
+  
+  def refhvr_its1=(value)
+    @refhvr_its1 = value[0] if value.class == Array
+  end
+  
   
   def make_taxslv_silva_modified_query()
     query = 
@@ -61,6 +68,14 @@ class GenusName
     "
   end
   
+  def make_refhvr_its_query()
+    query = "SELECT DISTINCT taxonomy FROM env454.refhvr_its1 JOIN env454.taxonomy USING(taxonomy_id) WHERE taxonomy REGEXP '[[:<:]]#{@genus_name}[[:>:]]' limit 1;"
+  end
+    
+  def make_update_query()
+    query = "UPDATE refssu_115_from_file JOIN refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP) SET taxslv_silva_modified = replace(taxslv_silva_modified, '#{@taxslv_silva_modified}', '#{@refhvr_its1}'), taxslv_silva_modification = concat(taxslv_silva_modification, '; #{@genus_name} (genus) by Unite') WHERE taxslv_silva_modified like '#{@taxslv_silva_modified}';
+    "
+  end
 end
 
 # --- main ---
@@ -83,8 +98,7 @@ def run_query(dbh, query)
   sth.execute()
   sth.each {|row| query_result << row.to_a }
   sth.finish
-  return query_result
-  
+  return query_result[0]
 end
 
 
@@ -102,9 +116,20 @@ begin
     instance.genus_name            = line.strip
     instance.taxslv_silva_modified = run_query(dbh, instance.make_taxslv_silva_modified_query())
     # [["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Asterotremella"]]
+    instance.refhvr_its1           = run_query(dbh, instance.make_refhvr_its_query())
+    update_query                   = instance.make_update_query() if instance.refhvr_its1
     
+    
+    p "+" * 10
     p instance.taxslv_silva_modified
-    
+    p instance.refhvr_its1
+    p update_query
+    # begin
+    #   p instance.refhvr_its1[0].class
+    #   p instance.refhvr_its1[0].length
+    # rescue StandardError => e
+    #   p e
+    # end
   end
 # --- main ends ---
 
