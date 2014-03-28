@@ -28,7 +28,8 @@
 # 
 # 
 # UPDATE refssu_115_from_file JOIN refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP) SET taxslv_silva_modified = replace(taxslv_silva_modified, "$1$2", "$3"), taxslv_silva_modification = concat(taxslv_silva_modification, "; $2 (genus) by Unite") WHERE taxslv_silva_modified like '$1$2'
-# 
+# "UPDATE refssu_115_from_file JOIN refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP) SET taxslv_silva_modified = replace(taxslv_silva_modified, 'Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Asterotremella', 'Eukarya;Fungi_Basidiomycota;Tremellomycetes;Trichosporonales;Trichosporonaceae;Asterotremella'), taxslv_silva_modification = concat(taxslv_silva_modification, '; Asterotremella (genus) by Unite') WHERE taxslv_silva_modified like 'Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Asterotremella';\n    "
+
 # */
 
 require "rubygems"
@@ -61,8 +62,7 @@ class GenusName
     "SELECT DISTINCT taxslv_silva_modified 
         FROM env454.refssu_115_from_file 
         JOIN env454.refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP)
-        WHERE 
-        family = '#{@genus_name}'
+        WHERE family = '#{@genus_name}'
         AND deleted = 0
         AND taxonomy = '';
     "
@@ -73,7 +73,11 @@ class GenusName
   end
     
   def make_update_query()
-    query = "UPDATE refssu_115_from_file JOIN refssu_taxslv_silva_modified_ranks USING(accession_id, START, STOP) SET taxslv_silva_modified = replace(taxslv_silva_modified, '#{@taxslv_silva_modified}', '#{@refhvr_its1}'), taxslv_silva_modification = concat(taxslv_silva_modification, '; #{@genus_name} (genus) by Unite') WHERE taxslv_silva_modified like '#{@taxslv_silva_modified}';
+    query = 
+    "UPDATE refssu_115_from_file 
+      SET taxslv_silva_modified = replace(taxslv_silva_modified, '#{@taxslv_silva_modified}', '#{@refhvr_its1}'), 
+          taxslv_silva_modification = concat(taxslv_silva_modification, '; #{@genus_name} (genus) by Unite') 
+      WHERE taxslv_silva_modified like '#{@taxslv_silva_modified}';
     "
   end
 end
@@ -115,15 +119,17 @@ begin
     instance = GenusName.new
     instance.genus_name            = line.strip
     instance.taxslv_silva_modified = run_query(dbh, instance.make_taxslv_silva_modified_query())
-    # [["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Asterotremella"]]
     instance.refhvr_its1           = run_query(dbh, instance.make_refhvr_its_query())
-    update_query                   = instance.make_update_query() if instance.refhvr_its1
+    update_query                   = instance.make_update_query() unless instance.refhvr_its1.nil?
+    
+ file_out = File.open("update_fung_genus.sql", "a")
+ file_out.write(update_query)
     
     
-    p "+" * 10
-    p instance.taxslv_silva_modified
-    p instance.refhvr_its1
-    p update_query
+    # p "+" * 10
+    # p instance.taxslv_silva_modified
+    # p instance.refhvr_its1
+    # p update_query
     # begin
     #   p instance.refhvr_its1[0].class
     #   p instance.refhvr_its1[0].length
@@ -131,6 +137,8 @@ begin
     #   p e
     # end
   end
+  # file_out.close unless file_out == nil
+
 # --- main ends ---
 
   rescue DBI::DatabaseError => e
@@ -142,7 +150,6 @@ begin
     dbh.disconnect if dbh    
 end
 
-# file_out.close       unless file_out       == nil
 
 
 # 
