@@ -106,16 +106,11 @@ def make_taxslv_silva_modified_query(genus_names)
 end
 
 def make_refhvr_its_query(genus_names_arr)
-  # print "genus_names from 1 = "
-  # p genus_names
-  # genus_names_arr = genus_names.split(",")
-  # print "genus_names_arr from 1 = "
-  # p genus_names_arr
   query = "SELECT DISTINCT taxonomy FROM env454.refhvr_its1 JOIN env454.taxonomy USING(taxonomy_id) WHERE "
   genus_names_arr[0...-1].each do |genus_name|
-    query += " taxonomy REGEXP '[[:<:]]#{genus_name.tr("'", "")}[[:>:]]' OR "
+    query += " taxonomy REGEXP '[[:<:]]#{genus_name}[[:>:]]' OR "
   end
-  query += "taxonomy REGEXP '[[:<:]]#{genus_names_arr[-1].tr("'", "")}[[:>:]]';"
+  query += "taxonomy REGEXP '[[:<:]]#{genus_names_arr[-1]}[[:>:]]';"
   return query
 end
 
@@ -133,23 +128,23 @@ begin
   File.readlines(file_in_name).each do |line|
     contents += line.strip
   end
-  print "contents = "
-  p contents
-  taxslv_silva_modified_query =  make_taxslv_silva_modified_query(contents)
+  # print "contents = "
+  # p contents
+  # taxslv_silva_modified_query =  make_taxslv_silva_modified_query(contents)
  # print "taxslv_silva_modified_query = " 
  # p taxslv_silva_modified_query
   taxslv_silva_modified_res = run_query(dbh, make_taxslv_silva_modified_query(contents))
  # p res
  
  
- contents_arr = 
- contents_arr = contents.split(",")
+ contents_arr = contents.split(",").map {|line| line.tr("'", "")}
+ 
  print "contents_arr from 2 = "
  p contents_arr
  
  
- refhvr_its_res_query =  make_refhvr_its_query(contents_arr)
-  refhvr_its_res            = run_query(dbh, refhvr_its_res_query)
+ # refhvr_its_res_query =  make_refhvr_its_query(contents_arr)
+  refhvr_its_res            = run_query(dbh, make_refhvr_its_query(contents_arr))
   p "refhvr_its_res = "
   p refhvr_its_res
  
@@ -158,9 +153,27 @@ begin
   # [["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Rhizophydiales;Terramycetaceae;Boothiomyces"], ["Eukarya;Fungi_Chytridiomycota;Chytridiomycetes;Rhizophydiales;Terramycetaceae;Boothiomyces;macroporosum"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Mucoraceae;Actinomucor"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Mucoraceae;Actinomucor;elegans"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Biatoropsis;usnearum"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Bullera"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Bullera;arundinariae"],  ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Tremellales;Incertae_sedis;Bulleromyces;albus"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Trichosporonales;Trichosporonaceae;Asterotremella"], ["Eukarya;Fungi_Basidiomycota;Tremellomycetes;Trichosporonales;Trichosporonaceae;Asterotremella;albida"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Backusellaceae;Backusella;circina"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Backusellaceae;Backusella;indica"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Backusellaceae;Backusella;variabilis"], ["Eukarya;Fungi_Zygomycota;Incertae_sedis;Mucorales;Incertae_sedis;Ambomucor"]]
   
   
-  # contents.each do |line|
-  #   instance = GenusName.new
-  #   instance.genus_name            = line.strip
+  contents_arr.each do |line|
+    p "+" * 10
+    p line
+    instance = GenusName.new
+    instance.genus_name            = line.strip
+    print "instance.genus_name = "
+    p instance.genus_name
+    
+    instance.taxslv_silva_modified = taxslv_silva_modified_res.select {|a| a[0].split(";").include?(instance.genus_name) }
+    print "instance.taxslv_silva_modified = "
+    p instance.taxslv_silva_modified
+    
+    # taxslv_silva_modified_res.map {|a| p a.include("Actinomucor") }
+    # taxslv_silva_modified_res.select{ |user, flag| user.id == 2}
+    # taxslv_silva_modified_res.each do |taxslv_silva_modified|
+    #   print "taxslv_silva_modified = "
+    #   p taxslv_silva_modified
+    #   multi_array.map {|a| a & numbers_looking_to_match }
+    #   
+    #   
+    # end
     # instance.taxslv_silva_modified = run_query(dbh, instance.make_taxslv_silva_modified_query())
  #    instance.refhvr_its1           = run_query(dbh, instance.make_refhvr_its_query())
  #    update_query                   = instance.make_update_query() unless instance.refhvr_its1.nil?
@@ -169,7 +182,6 @@ begin
  # file_out.write(update_query)
     
     
-    # p "+" * 10
     # p instance.taxslv_silva_modified
     # p instance.refhvr_its1
     # p update_query
@@ -179,7 +191,7 @@ begin
     # rescue StandardError => e
     #   p e
     # end
-  # end
+  end
   # file_out.close unless file_out == nil
 
 # --- main ends ---
