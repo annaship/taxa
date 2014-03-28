@@ -162,21 +162,18 @@ begin
     p instance.genus_name
     
     instance.taxslv_silva_modified = taxslv_silva_modified_res.select {|a| a[0].split(";").include?(instance.genus_name) }
-    # print "instance.taxslv_silva_modified = "
-    # p instance.taxslv_silva_modified
     
-    instance.refhvr_its1 = refhvr_its_res.select {|a| a[0].split(";")[-1] == instance.genus_name } 
-    if instance.refhvr_its1.length == 0
+    refhvr_its1 = refhvr_its_res.select {|a| a[0].split(";")[-1] == instance.genus_name }[0] 
+    if refhvr_its1.nil?
+       # instance.refhvr_its1.length == 0
       refhvr_its1 = refhvr_its_res.select {|a| a[0].split(";")[-2] == instance.genus_name }
-      if refhvr_its1.length != 0
-        print "!!! refhvr_its1 = "
-        p refhvr_its1
-        instance.refhvr_its1 = refhvr_its1[0][0].split(";")[0..-2].join(";") unless refhvr_its1.nil?
-      end
+      instance.refhvr_its1 = refhvr_its1[0][0].split(";")[0..-2].join(";") unless refhvr_its1.length == 0
+    else
+      instance.refhvr_its1 = refhvr_its1[0]
     end
     print "instance.refhvr_its1 = "
     p instance.refhvr_its1
-    p instance.refhvr_its1.length
+    # p instance.refhvr_its1.length
     
     
  #    instance.refhvr_its1           = run_query(dbh, instance.make_refhvr_its_query())
