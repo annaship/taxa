@@ -36,27 +36,19 @@ class Entry:
         
     def good_gen(self):
         query = ""    
-        if (self.number_of_ranks == 6 and self.last_rank_from_full_name == self.genus_name):
-            if self.is_species():
+        if (self.number_of_ranks == 6 and self.last_rank_from_full_name == self.genus_name and self.is_species()):
                 new_name = self.full_name + ";" + self.species_name                
                 query = 'UPDATE refssu_115_from_file SET taxonomy = "%s", taxslv_silva_modification = concat(taxslv_silva_modification, "; add species name from fullname"), taxonomy_source = "taxslv_silva_modification" WHERE taxslv_silva_modified = "%s" and silva_fullname = "%s" AND deleted = 0 AND taxonomy = "";' % (new_name, self.full_name, self.genus_species)
         return query
 
 
-    def print_bad_gen(self):
-        # to_check = ""
+    def conflict_genus(self):
         if (self.number_of_ranks == 6 and self.last_rank_from_full_name != self.genus_name and self.is_genus()):
-            # print "BAD: number_of_ranks = %s, last_rank_from_full_name = %s, genus_name = %s\nself.full_name = %s\nself.genus_species = %s\n" % (self.number_of_ranks, self.last_rank_from_full_name, self.genus_name, self.full_name, self.genus_species)    
-            # to_check = self.full_name + "," + self.genus_species + "," + self.genus_name + "," + self.last_rank_from_full_name
             return True
-            # to_check
         
     def gen5(self):
-        # to_check = ""
         if (self.number_of_ranks == 5 and self.is_genus()): 
-            # to_check = self.full_name + "," + self.genus_species + "," + self.genus_name + "," + self.last_rank_from_full_name
             return True
-            # to_check
         
 
 # main
@@ -69,12 +61,12 @@ def print_good_species_into_file():
 def print_check_species_into_csv(list_name, filename_base):
     check_species_file_name = filename_base + ".csv"
     f = open(check_species_file_name, 'w')
-    f.write("taxslv_silva_modified,silva_fullname,genus_name,last_rank")
+    f.write("accession_id,taxslv_silva_modified,silva_fullname,genus_name,last_rank\n")
     list_name_str = "\n".join(map(str, set(list_name)))    
     f.write(list_name_str)
     f.close()
 
-fname                   = "mod_species3-27-14.csv"
+fname                   = "id_mod_species3-28-14.csv"
 add_species_file_name   = "add_species.sql"
 all_queries             = []
 all_to_check            = []
@@ -86,26 +78,15 @@ with open(fname) as f:
     
 for line in content:
     try:
-        # print n
-        # print "=" * 10
-        # n += 1
         row      = Entry(line)
         to_check = ""
         
-        # print "row.good_gen() = %s" % row.good_gen()
-
         all_queries.append(row.good_gen())
-        print "row.print_bad_gen() = %s, row.gen5 = %s" % (row.print_bad_gen(), row.gen5())
-        if (row.print_bad_gen()):
-            to_check = row.full_name + "," + row.genus_species + "," + row.genus_name + "," + row.last_rank_from_full_name            
+        to_check = row.accession_id + "," + row.full_name + "," + row.genus_species + "," + row.genus_name + "," + row.last_rank_from_full_name            
+        if (row.conflict_genus()):
             conflict_name.append(to_check)
-            print "HERE11"
         if (row.gen5()):
-            to_check = row.full_name + "," + row.genus_species + "," + row.genus_name + "," + row.last_rank_from_full_name            
             all_to_check.append(to_check)
-            print "HERE22"
-        
-        # all_to_check.append(row.gen5())
     except:
         print "line with error: ", line
         print "Unexpected error:", sys.exc_info()[0]
@@ -114,5 +95,3 @@ for line in content:
 print_good_species_into_file()
 print_check_species_into_csv(all_to_check, 'all_to_check')
 print_check_species_into_csv(conflict_name, 'conflict_name')
-# print_check_species_into_file()
-# print_conflict_name_into_file()
