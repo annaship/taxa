@@ -49,49 +49,51 @@ def get_its_info(dbh, name)
   its_res = run_query(dbh, make_query_to_its(name.strip))    
   if its_res[0].nil?
     genus_name = "'" + name.strip.gsub(/"/,"").split()[0] + "'"
-    print "genus_name = "
-    p genus_name
+    # print "genus_name = "
+    # p genus_name
     its_res = run_query(dbh, make_query_to_its(genus_name))      
   end
   return its_res
 end
 
-def make_to_print(res)
-  to_print = "-" * 10
-  to_print += "\n"
-  
-end
-
 begin
-  n = -1
+  n = 1
   mysql_read_default_file="~/.my.cnf"
   dsn = "DBI:Mysql:host=newbpcdb2;mysql_read_default_group=client"
   dbh = DBI.connect(dsn,nil,nil)
 
 # --- main ---
   file_in_name, file_out_name = use_args()
-  file_in = open(file_in_name)
-  content = file_in.readlines
+  file_in  = open(file_in_name)
+  content  = file_in.readlines
   file_out = File.open(file_out_name, "w")
-
+  row = {}
+  to_print = "-" * 10
+  to_print += "\n"
+  
   content.each do |name|
+    row[:num] = n
+    n += 1
+
     print "HERE, name = "
     p name.strip.gsub(/"/,"")
     
     its_res = get_its_info(dbh, name)
-    unless its_res[0].nil?  
-      print "HERE, its_res = "
-      p its_res
-    end
-
+    # its_res[0].nil? ? row[:its] = its_res : row[:its] = ""
+    
     current_silva = run_query(dbh, make_query_to_silva(name.strip.gsub(/"/,"")))
     unless current_silva[0].nil?  
-      print "HERE, current_silva = "
-      p current_silva
-      # current_silva = [["Eukarya;Fungi_Basidiomycota;Pucciniomycetes;Pucciniales", "Aecidium epimedii"]]      
+      # print "HERE, current_silva = "
+      # p current_silva
+      # current_silva = [["Eukarya;Fungi_Basidiomycota;Pucciniomycetes;Pucciniales", "Aecidium epimedii"]]  
+      row[:taxslv_silva_modified] = current_silva[0][0]
+      row[:silva_fullname]        = current_silva[0][1]
     end
 
-    n += 1
+    print "HERE, row = "
+    p row
+    
+
     file_out.write(n)
     file_out.write(to_print)   
 
