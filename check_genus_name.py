@@ -66,7 +66,7 @@ def print_check_species_into_csv(list_name, filename_base):
     f.write(list_name_str)
     f.close()
 
-fname                   = "id_mod_species3-28-14.csv"
+fname                   = "id_mod_species4-7-14.csv"
 add_species_file_name   = "add_species.sql"
 all_queries             = []
 all_to_check            = []
