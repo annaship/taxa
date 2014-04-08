@@ -79,7 +79,15 @@ begin
     p name.strip.gsub(/"/,"")
     
     its_res = get_its_info(dbh, name)
-    # its_res[0].nil? ? row[:its] = its_res : row[:its] = ""
+    its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0]
+    # unless its_res[0].nil?  
+    #   # print "HERE, its_res = "
+    #   # p its_res
+    #   row[:its] = its_res[0]
+    # else 
+    #   row[:its] = ""
+    # end
+    
     
     current_silva = run_query(dbh, make_query_to_silva(name.strip.gsub(/"/,"")))
     unless current_silva[0].nil?  
