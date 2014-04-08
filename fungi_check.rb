@@ -103,9 +103,23 @@ begin
     # 2) its starts with silva 
     # 3) its != silva
     
+  results.each do |row|
+    row[:check] = ""
+    if (row[:its] == row[:taxslv_silva_modified])
+      row[:check] = "same"
+    elsif row[:its].start_with?(row[:taxslv_silva_modified])
+      row[:check] = "in its"      
+    elsif row[:taxslv_silva_modified].start_with?(row[:its])
+      row[:check] = "in silva"      
+    end
+  end
+  
+    
   file_out.write(",its taxonomy,taxslv_silva_modified,silva_fullname\n")
   results.each do |row|
     file_out.write(row[:num]) 
+    file_out.write(",") 
+    file_out.write(row[:check]) 
     file_out.write(",") 
     file_out.write(row[:its]) 
     file_out.write(",") 
