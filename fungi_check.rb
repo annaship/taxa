@@ -7,6 +7,7 @@ require 'uri'
 require 'open-uri'
 
 # gem install dbd-mysql
+# todo: get all mysql results in one query
 
 def use_args()
   if ARGV[0].nil?
@@ -67,11 +68,13 @@ begin
   file_in  = open(file_in_name)
   content  = file_in.readlines
   file_out = File.open(file_out_name, "w")
-  row = {}
-  to_print = "-" * 10
-  to_print += "\n"
+  results  = []
   
   content.each do |name|
+    row = Hash.new
+    # testArray[i] = Hash.new
+    # testArray[i][:value] = i
+    
     row[:num] = n
     n += 1
 
@@ -79,33 +82,31 @@ begin
     p name.strip.gsub(/"/,"")
     
     its_res = get_its_info(dbh, name)
-    its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0]
-    # unless its_res[0].nil?  
-    #   # print "HERE, its_res = "
-    #   # p its_res
-    #   row[:its] = its_res[0]
-    # else 
-    #   row[:its] = ""
-    # end
-    
+    its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0][0]
     
     current_silva = run_query(dbh, make_query_to_silva(name.strip.gsub(/"/,"")))
     unless current_silva[0].nil?  
-      # print "HERE, current_silva = "
-      # p current_silva
-      # current_silva = [["Eukarya;Fungi_Basidiomycota;Pucciniomycetes;Pucciniales", "Aecidium epimedii"]]  
       row[:taxslv_silva_modified] = current_silva[0][0]
       row[:silva_fullname]        = current_silva[0][1]
     end
 
-    print "HERE, row = "
+    print "HERE1, row = "
     p row
+    results << row
     
-
-    file_out.write(n)
-    file_out.write(to_print)   
+    # file_out.write(n)
+    # file_out.write(to_print)   
 
   end
+  p "-" * 10
+  print "HERE, results = "
+  p results
+  
+  # what to do with the result:
+    # 1) its = silva: print taxonomy
+    # 2) its starts with silva 
+    # 3) its != silva
+  
 # --- main ends ---
 
   rescue DBI::DatabaseError => e
