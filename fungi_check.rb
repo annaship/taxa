@@ -33,11 +33,8 @@ def run_query(dbh, query)
 end
 
 def make_query_to_its(name)
-  q = "SELECT DISTINCT taxonomy FROM env454.taxonomy JOIN env454.refhvr_its1 USING(taxonomy_id)
-    WHERE taxonomy regexp BINARY '#{name}'"
-    print "make_query_to_its query = "
-    p q
-    
+  "SELECT DISTINCT taxonomy FROM env454.taxonomy JOIN env454.refhvr_its1 USING(taxonomy_id)
+    WHERE taxonomy regexp BINARY '#{name}'"    
 end
 
 def make_query_to_all_silva(content)
@@ -78,9 +75,7 @@ def get_its_info(dbh, name)
   its_res = run_query(dbh, make_query_to_its(name))    
   if its_res[0].nil?
     genus_name = name.split()[0]
-    # print "genus_name = "
-    # p genus_name
-    its_res = run_query(dbh, make_query_to_its(genus_name))      
+    its_res    = run_query(dbh, make_query_to_its(genus_name))      
   end
   return its_res
 end
@@ -94,8 +89,7 @@ begin
 # --- main ---
   file_in_name, file_out_name = use_args()
   file_in  = open(file_in_name)
-  content0  = file_in.readlines
-  content = content0.collect{|x| x.strip.gsub(/"/,"")}
+  content  = file_in.readlines.collect{|x| x.strip.gsub(/"/,"")}
   
   file_out = File.open(file_out_name, "w")
   results  = []
@@ -108,17 +102,6 @@ begin
 
   all_silva_hash = Hash[content.zip(all_silva)]
 
-  p "-" * 10
-  print "all_silva_hash = "
-  p all_silva_hash
-  
-  p "+" * 10
-  
-  
-  
-  # time_method(run_query(dbh, query_to_all_silva))
-  
-  
   beginning_time = Time.now
   content.each do |name|
     row = Hash.new
@@ -133,18 +116,9 @@ begin
     its_res = get_its_info(dbh, name)
     its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0][0]
     
-    current_silva = all_silva_hash[name]
-    print "HERE5, current_silva = "
-    p current_silva
-    
-    # run_query(dbh, make_query_to_silva(name))
-    # unless current_silva[0].nil?  
-      row[:taxslv_silva_modified] = current_silva[0][0]
-      row[:silva_fullname]        = current_silva[0][1]
-    # end
+    row[:taxslv_silva_modified] = all_silva_hash[name][0]
+    row[:silva_fullname]        = all_silva_hash[name][1]
 
-    # print "HERE1, row = "
-    # p row
     results << row
     
     # file_out.write(n)
