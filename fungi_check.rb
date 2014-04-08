@@ -43,14 +43,10 @@ def make_query_to_all_silva(content)
    WHERE (silva_fullname REGEXP '[[:<:]]"
      
   content.each do |name|
-    
-    if name == content[content.size - 1]
-      print "name == content[content.size - 1]: "
-      p name 
-     query += (name.strip.gsub(/"/,"")) + "[[:>:]]'"
-   else
-     query += (name.strip.gsub(/"/,"")) + "[[:>:]]' OR silva_fullname REGEXP '[[:<:]]"     
-   end
+    query += (name.strip.gsub(/"/,"")) + "[[:>:]]'"
+    unless (name == content[content.size - 1])
+      query += "OR silva_fullname REGEXP '[[:<:]]"     
+    end
   end
   query += ") AND deleted = 0
   AND taxonomy = ''
@@ -58,6 +54,13 @@ def make_query_to_all_silva(content)
   return query
 end
 
+
+def time_method(method, *args)
+  beginning_time = Time.now
+  self.send(method, args)
+  end_time = Time.now
+  puts "Time elapsed #{(end_time - beginning_time)*1000} milliseconds"
+end
 
 def make_query_to_silva(name)
   "SELECT DISTINCT taxslv_silva_modified, silva_fullname
@@ -93,11 +96,21 @@ begin
   results  = []
   
   query_to_all_silva = make_query_to_all_silva(content)
-  p "+" * 10
-  print "query_to_all_silva = "
-  p query_to_all_silva
+  p "-" * 10
+  beginning_time = Time.now
+  res1 = run_query(dbh, query_to_all_silva)
+  end_time = Time.now
+  puts "Time 1 elapsed #{(end_time - beginning_time)*1000} milliseconds"
+  print "res1 = "
+  p res1
+  
   p "+" * 10
   
+  
+  # time_method(run_query(dbh, query_to_all_silva))
+  
+  
+  beginning_time = Time.now
   content.each do |name|
     row = Hash.new
     # testArray[i] = Hash.new
@@ -106,11 +119,11 @@ begin
     row[:num] = n
     n += 1
 
-    print "HERE, name = "
-    p name.strip.gsub(/"/,"")
+    # print "HERE, name = "
+    # p name.strip.gsub(/"/,"")
     
-    its_res = get_its_info(dbh, name)
-    its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0][0]
+    # its_res = get_its_info(dbh, name)
+    # its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0][0]
     
     current_silva = run_query(dbh, make_query_to_silva(name.strip.gsub(/"/,"")))
     unless current_silva[0].nil?  
@@ -118,14 +131,17 @@ begin
       row[:silva_fullname]        = current_silva[0][1]
     end
 
-    print "HERE1, row = "
-    p row
+    # print "HERE1, row = "
+    # p row
     results << row
     
     # file_out.write(n)
     # file_out.write(to_print)   
 
   end
+  end_time = Time.now
+  puts "Time 2 elapsed #{(end_time - beginning_time)*1000} milliseconds"
+  
   p "-" * 10
   print "HERE, results = "
   p results
