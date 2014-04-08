@@ -37,28 +37,6 @@ def make_query_to_its(name)
     WHERE taxonomy regexp BINARY " + name
 end
 
-def make_query_to_all_silva(content)
-  query = "SELECT DISTINCT taxslv_silva_modified, silva_fullname
-  FROM env454.refssu_115_from_file
-   WHERE (silva_fullname REGEXP '[[:<:]]"
-     
-  content.each do |name|
-    
-    if name == content[content.size - 1]
-      print "name == content[content.size - 1]: "
-      p name 
-     query += (name.strip.gsub(/"/,"")) + "[[:>:]]'"
-   else
-     query += (name.strip.gsub(/"/,"")) + "[[:>:]]' OR silva_fullname REGEXP '[[:<:]]"     
-   end
-  end
-  query += ") AND deleted = 0
-  AND taxonomy = ''
-  "
-  return query
-end
-
-
 def make_query_to_silva(name)
   "SELECT DISTINCT taxslv_silva_modified, silva_fullname
   FROM env454.refssu_115_from_file
@@ -91,12 +69,6 @@ begin
   content  = file_in.readlines
   file_out = File.open(file_out_name, "w")
   results  = []
-  
-  query_to_all_silva = make_query_to_all_silva(content)
-  p "+" * 10
-  print "query_to_all_silva = "
-  p query_to_all_silva
-  p "+" * 10
   
   content.each do |name|
     row = Hash.new
