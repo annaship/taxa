@@ -34,22 +34,22 @@ end
 
 def make_query_to_its(name)
   "SELECT DISTINCT taxonomy FROM env454.taxonomy JOIN env454.refhvr_its1 USING(taxonomy_id)
-    WHERE taxonomy regexp BINARY " + name
+    WHERE taxonomy regexp BINARY '#{name}'"
 end
 
 def make_query_to_silva(name)
   "SELECT DISTINCT taxslv_silva_modified, silva_fullname
   FROM env454.refssu_115_from_file
-   WHERE silva_fullname REGEXP '[[:<:]]" + name + "[[:>:]]'
+   WHERE silva_fullname REGEXP '[[:<:]]#{name}[[:>:]]'
    AND deleted = 0
   AND taxonomy = ''
   "
 end
 
 def get_its_info(dbh, name)
-  its_res = run_query(dbh, make_query_to_its(name.strip))    
+  its_res = run_query(dbh, make_query_to_its(name))    
   if its_res[0].nil?
-    genus_name = "'" + name.strip.gsub(/"/,"").split()[0] + "'"
+    genus_name = name.split()[0]
     # print "genus_name = "
     # p genus_name
     its_res = run_query(dbh, make_query_to_its(genus_name))      
@@ -66,32 +66,28 @@ begin
 # --- main ---
   file_in_name, file_out_name = use_args()
   file_in  = open(file_in_name)
-  content  = file_in.readlines
+  content  = file_in.readlines.collect{|x| x.strip.gsub(/"/,"")}
   file_out = File.open(file_out_name, "w")
   results  = []
   
   content.each do |name|
     row = Hash.new
-    # testArray[i] = Hash.new
-    # testArray[i][:value] = i
     
     row[:num] = n
     n += 1
 
-    print "HERE, name = "
-    p name.strip.gsub(/"/,"")
+    # print "HERE, name = "
+    # p name
     
     its_res = get_its_info(dbh, name)
     its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0][0]
     
-    current_silva = run_query(dbh, make_query_to_silva(name.strip.gsub(/"/,"")))
+    current_silva = run_query(dbh, make_query_to_silva(name))
     unless current_silva[0].nil?  
       row[:taxslv_silva_modified] = current_silva[0][0]
       row[:silva_fullname]        = current_silva[0][1]
     end
 
-    print "HERE1, row = "
-    p row
     results << row
     
     # file_out.write(n)
@@ -106,6 +102,18 @@ begin
     # 1) its = silva: print taxonomy
     # 2) its starts with silva 
     # 3) its != silva
+    
+  file_out.write(",its taxonomy,taxslv_silva_modified,silva_fullname\n")
+  results.each do |row|
+    file_out.write(row[:num]) 
+    file_out.write(",") 
+    file_out.write(row[:its]) 
+    file_out.write(",") 
+    file_out.write(row[:taxslv_silva_modified]) 
+    file_out.write(",") 
+    file_out.write(row[:silva_fullname]) 
+    file_out.write("\n") 
+  end
   
 # --- main ends ---
 
