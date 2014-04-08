@@ -34,7 +34,7 @@ end
 
 def make_query_to_its(name)
   "SELECT DISTINCT taxonomy FROM env454.taxonomy JOIN env454.refhvr_its1 USING(taxonomy_id)
-    WHERE taxonomy regexp BINARY '#{name}'"    
+    WHERE taxonomy regexp BINARY " + name
 end
 
 def make_query_to_all_silva(content)
@@ -43,10 +43,14 @@ def make_query_to_all_silva(content)
    WHERE (silva_fullname REGEXP '[[:<:]]"
      
   content.each do |name|
-    query += name + "[[:>:]]'"
-    unless (name == content[content.size - 1])
-      query += "OR silva_fullname REGEXP '[[:<:]]"     
-    end
+    
+    if name == content[content.size - 1]
+      print "name == content[content.size - 1]: "
+      p name 
+     query += (name.strip.gsub(/"/,"")) + "[[:>:]]'"
+   else
+     query += (name.strip.gsub(/"/,"")) + "[[:>:]]' OR silva_fullname REGEXP '[[:<:]]"     
+   end
   end
   query += ") AND deleted = 0
   AND taxonomy = ''
@@ -55,27 +59,22 @@ def make_query_to_all_silva(content)
 end
 
 
-def time_method(method, *args)
-  beginning_time = Time.now
-  self.send(method, args)
-  end_time = Time.now
-  puts "Time elapsed #{(end_time - beginning_time)*1000} milliseconds"
-end
-
 def make_query_to_silva(name)
   "SELECT DISTINCT taxslv_silva_modified, silva_fullname
   FROM env454.refssu_115_from_file
-   WHERE silva_fullname REGEXP '[[:<:]]#{name}[[:>:]]'
+   WHERE silva_fullname REGEXP '[[:<:]]" + name + "[[:>:]]'
    AND deleted = 0
   AND taxonomy = ''
   "
 end
 
 def get_its_info(dbh, name)
-  its_res = run_query(dbh, make_query_to_its(name))    
+  its_res = run_query(dbh, make_query_to_its(name.strip))    
   if its_res[0].nil?
-    genus_name = name.split()[0]
-    its_res    = run_query(dbh, make_query_to_its(genus_name))      
+    genus_name = "'" + name.strip.gsub(/"/,"").split()[0] + "'"
+    # print "genus_name = "
+    # p genus_name
+    its_res = run_query(dbh, make_query_to_its(genus_name))      
   end
   return its_res
 end
@@ -89,45 +88,44 @@ begin
 # --- main ---
   file_in_name, file_out_name = use_args()
   file_in  = open(file_in_name)
-  content  = file_in.readlines.collect{|x| x.strip.gsub(/"/,"")}
-  
+  content  = file_in.readlines
   file_out = File.open(file_out_name, "w")
   results  = []
   
-  beginning_time = Time.now
-  all_silva = run_query(dbh, make_query_to_all_silva(content))
-  end_time = Time.now
-  puts "Time 1 elapsed #{(end_time - beginning_time)*1000} milliseconds"
-
-
-  all_silva_hash = Hash[content.zip(all_silva)]
-
-  beginning_time = Time.now
+  query_to_all_silva = make_query_to_all_silva(content)
+  p "+" * 10
+  print "query_to_all_silva = "
+  p query_to_all_silva
+  p "+" * 10
+  
   content.each do |name|
     row = Hash.new
-    row[:name] = name
+    # testArray[i] = Hash.new
+    # testArray[i][:value] = i
     
     row[:num] = n
     n += 1
 
-    # print "HERE, name = "
-    # p name.gsub(/"/,"")
+    print "HERE, name = "
+    p name.strip.gsub(/"/,"")
     
     its_res = get_its_info(dbh, name)
     its_res[0].nil? ? row[:its] = "" : row[:its] = its_res[0][0]
     
-    row[:taxslv_silva_modified] = all_silva_hash[name][0]
-    row[:silva_fullname]        = all_silva_hash[name][1]
+    current_silva = run_query(dbh, make_query_to_silva(name.strip.gsub(/"/,"")))
+    unless current_silva[0].nil?  
+      row[:taxslv_silva_modified] = current_silva[0][0]
+      row[:silva_fullname]        = current_silva[0][1]
+    end
 
+    print "HERE1, row = "
+    p row
     results << row
     
     # file_out.write(n)
     # file_out.write(to_print)   
 
   end
-  end_time = Time.now
-  puts "Time 2 elapsed #{(end_time - beginning_time)*1000} milliseconds"
-  
   p "-" * 10
   print "HERE, results = "
   p results
