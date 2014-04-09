@@ -16,7 +16,7 @@ def use_args()
   end
 
   file_in_name  = ARGV[0]
-  file_out_name = ARGV[1] ||= file_in_name + ".filered.csv"
+  file_out_name = ARGV[1] ||= file_in_name + ".check.csv"
 
   return file_in_name, file_out_name
 end
@@ -73,7 +73,8 @@ begin
   content.each do |name|
     row = Hash.new
     
-    row[:num] = n
+    row[:name] = name
+    row[:num]  = n
     n += 1
 
     # print "HERE, name = "
@@ -94,9 +95,9 @@ begin
     # file_out.write(to_print)   
 
   end
-  p "-" * 10
-  print "HERE, results = "
-  p results
+  # p "-" * 10
+  # print "HERE, results = "
+  # p results
   
   # what to do with the result:
     # 1) its = silva: print taxonomy
@@ -105,18 +106,36 @@ begin
     
   results.each do |row|
     row[:check] = ""
-    if (row[:its] == row[:taxslv_silva_modified])
-      row[:check] = "same"
-    elsif row[:its].start_with?(row[:taxslv_silva_modified])
-      row[:check] = "in its"      
-    elsif row[:taxslv_silva_modified].start_with?(row[:its])
-      row[:check] = "in silva"      
+    unless row[:its].nil?
+      if (row[:its] == row[:taxslv_silva_modified])
+        row[:check] = "same"
+      elsif row[:its].start_with?(row[:taxslv_silva_modified])
+        row[:check] = "in its"      
+      elsif row[:taxslv_silva_modified].start_with?(row[:its])
+        row[:check] = "in silva"      
+      end
     end
   end
   
-    
-  file_out.write(",its taxonomy,taxslv_silva_modified,silva_fullname\n")
+    # 1,same,Eukarya;Fungi_Ascomycota;Lecanoromycetes;Acarosporales;Acarosporaceae;Acarospora,Eukarya;Fungi_Ascomycota;Lecanoromycetes;Acarosporales;Acarosporaceae;Acarospora,Acarospora smaragdula var. lesdainii,Acarospora smaragdula,smaragdula
+        
+  file_out.write(",check,its taxonomy,taxslv_silva_modified,silva_fullname\n")
   results.each do |row|
+    print row[:num] 
+    print "," 
+    print row[:check] 
+    print "," 
+    print row[:its] 
+    print "," 
+    print row[:taxslv_silva_modified] 
+    print "," 
+    print row[:silva_fullname] 
+    print "," 
+    print row[:name]     
+    print "," 
+    print row[:name].split([1])     
+    print "\n"
+    
     file_out.write(row[:num]) 
     file_out.write(",") 
     file_out.write(row[:check]) 
@@ -126,6 +145,10 @@ begin
     file_out.write(row[:taxslv_silva_modified]) 
     file_out.write(",") 
     file_out.write(row[:silva_fullname]) 
+    file_out.write(",") 
+    file_out.write(row[:name])     
+    file_out.write(",") 
+    file_out.write(row[:name].split()[1])     
     file_out.write("\n") 
   end
   
