@@ -57,6 +57,25 @@ def get_its_info(dbh, name)
   return its_res
 end
 
+def check_sim(row)
+  row[:check] = ""
+  begin
+    if (row[:its] == row[:taxslv_silva_modified])
+      row[:check] = "same"
+    elsif row[:its].start_with?(row[:taxslv_silva_modified])
+      row[:check] = "in its"      
+    elsif row[:taxslv_silva_modified].start_with?(row[:its])
+      row[:check] = "in silva"      
+    end
+  rescue Exception => e  
+    print "check_sim failed for row: "
+    p row
+    puts e.message  
+    puts e.backtrace.inspect 
+  end
+  return row
+end
+  
 begin
   n = 1
   mysql_read_default_file="~/.my.cnf"
@@ -89,13 +108,18 @@ begin
       row[:silva_fullname]        = current_silva[0][1]
     end
 
+    row = check_sim(row)
+    print "HERE, row = "
+    p row
+
+    
     results << row
     
     # file_out.write(n)
     # file_out.write(to_print)   
 
   end
-  # p "-" * 10
+  p "-" * 10
   # print "HERE, results = "
   # p results
   
@@ -104,41 +128,25 @@ begin
     # 2) its starts with silva 
     # 3) its != silva
     
-  results.each do |row|
-    row[:check] = ""
-    unless row[:its].nil?
-      if (row[:its] == row[:taxslv_silva_modified])
-        row[:check] = "same"
-      elsif row[:its].start_with?(row[:taxslv_silva_modified])
-        row[:check] = "in its"      
-      elsif row[:taxslv_silva_modified].start_with?(row[:its])
-        row[:check] = "in silva"      
-      end
-    end
-  end
+  # results.each do |row|
+  #   row[:check] = ""
+  #   unless row[:its].nil?
+  #     if (row[:its] == row[:taxslv_silva_modified])
+  #       row[:check] = "same"
+  #     elsif row[:its].start_with?(row[:taxslv_silva_modified])
+  #       row[:check] = "in its"      
+  #     elsif row[:taxslv_silva_modified].start_with?(row[:its])
+  #       row[:check] = "in silva"      
+  #     end
+  #   end
+  # end
   
     # 1,same,Eukarya;Fungi_Ascomycota;Lecanoromycetes;Acarosporales;Acarosporaceae;Acarospora,Eukarya;Fungi_Ascomycota;Lecanoromycetes;Acarosporales;Acarosporaceae;Acarospora,Acarospora smaragdula var. lesdainii,Acarospora smaragdula,smaragdula
         
   file_out.write(",check,its taxonomy,taxslv_silva_modified,silva_fullname\n")
-  results.each do |row|
-    print row[:num] 
-    print "," 
-    print row[:check] 
-    print "," 
-    print row[:its] 
-    print "," 
-    print row[:taxslv_silva_modified] 
-    print "," 
-    print row[:silva_fullname] 
-    print "," 
-    print row[:name]     
-    print "," 
-    print row[:name].split([1])     
-    print "\n"
-    
+
+  results.each do |row|    
     file_out.write(row[:num]) 
-    file_out.write(",") 
-    file_out.write(row[:check]) 
     file_out.write(",") 
     file_out.write(row[:its]) 
     file_out.write(",") 
