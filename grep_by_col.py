@@ -48,7 +48,7 @@ import re
 def read_file(filename):
     print "HERE filename = %s" % filename
     with open(filename) as f:
-        content = f.readlines()
+        content = f.read().splitlines()
     return content
         
         
@@ -62,8 +62,18 @@ if __name__ == '__main__':
     list_to_take_out      = read_file(list_to_take_out_name)
     file_to_take_out_from = read_file(file_to_take_out_from_name)
 
+    for l in list_to_take_out:
+        print l
+        print "8" * 8
+
     for line in file_to_take_out_from:
-        print line
+        genus_name = line.split(",")[3].strip()  
+        if genus_name in list_to_take_out:
+            print "YES if genus_name in list_to_take_out:"
+            print genus_name
+        # else:
+        #     print "NOT if genus_name in list_to_take_out:"
+        # print "list_to_take_out.type()" % list_to_take_out.type()
     
     
     # for line in file_to_take_out_from_name:
