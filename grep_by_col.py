@@ -46,10 +46,15 @@ import re
         
 
 def read_file(filename):
-    print "HERE filename = %s" % filename
     with open(filename) as f:
         content = f.read().splitlines()
     return content
+
+def write_file(filename, to_write):
+    f = open(filename,'w')
+    f.write(to_write)
+    f.close()
+    
         
         
 if __name__ == '__main__':
@@ -58,43 +63,27 @@ if __name__ == '__main__':
     file_to_take_out_from_name = sys.argv[2].strip()
     output_file_name           = file_to_take_out_from_name + ".out.csv"
     deleted_val_file_name      = file_to_take_out_from_name + ".del.csv"
+    
+    output_val                 = []
+    deleted_val_fil            = []
+    
 
     list_to_take_out      = read_file(list_to_take_out_name)
     file_to_take_out_from = read_file(file_to_take_out_from_name)
 
-    for l in list_to_take_out:
-        print l
-        print "8" * 8
-
     for line in file_to_take_out_from:
-        genus_name = line.split(",")[3].strip()  
-        if genus_name in list_to_take_out:
-            print "YES if genus_name in list_to_take_out:"
-            print genus_name
-        # else:
-        #     print "NOT if genus_name in list_to_take_out:"
-        # print "list_to_take_out.type()" % list_to_take_out.type()
+        try:
+            genus_name = line.split(",")[3].strip()  
+            if genus_name in list_to_take_out:
+                # print "YES if genus_name in list_to_take_out:"
+                # print genus_name
+                deleted_val_fil.append(line)
+            else:
+                output_val.append(line)
+        except:
+            print "line with error: ", line
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
     
-    
-    # for line in file_to_take_out_from_name:
-    #     self.line = line
-    #     try:
-    #         self.its_taxonomy              = line.split(",")[0].strip()
-    #         self.taxslv_silva_modified_old = line.split(",")[1].strip()
-    #         self.silva_fullname            = line.split(",")[2].strip()
-    #         self.silva_fullname_species    = line.split(",")[-1].strip()
-    # 
-    #         self.count_fields              = self.its_taxonomy.count(';')
-    #         self.its_taxonomy_species      = self.its_taxonomy.split(";")[-1].strip()
-    #         self.its_taxonomy_to_genus     = self.its_taxonomy.split(";")[:-1]
-    #         self.its_taxonomy_new_species  = ";".join(self.its_taxonomy_to_genus) + ";" + self.silva_fullname_species if len(self.silva_fullname_species) > 0 else ";".join(its_taxonomy_to_genus)
-    #         # Apiosordaria
-    #         self.its_taxonomy_add_species  = self.its_taxonomy + ";" + self.silva_fullname_species if len(self.silva_fullname_species) > 0 else self.its_taxonomy
-    #     
-    #         print "+" * 10
-    #         print self.make_update_query()
-    #         
-    #     except:
-    #         print "line with error: ", line
-    #         print "Unexpected error:", sys.exc_info()[0]
-    #         raise
+    write_file(output_file_name,      "\n".join(output_val))
+    write_file(deleted_val_file_name, "\n".join(deleted_val_fil))
