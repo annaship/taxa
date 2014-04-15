@@ -32,8 +32,8 @@ class Entry:
         self.last_rank_from_full_name = self.full_name.split(";")[-1]
         self.genus_name               = self.genus_species.split()[0]
         self.species_name             = ""
-        if (len(self.genus_species.split()) == 2):
-            self.species_name         = self.genus_species.split()[1]
+        # if (len(self.genus_species.split()) == 2):
+        #     self.species_name         = self.genus_species.split()[1]
         if (len(self.genus_species.split()) >= 2):
             self.species_name         = self.genus_species.split()[1]
 
@@ -43,8 +43,15 @@ class Entry:
 
         
     def is_species(self):
+        bad_words = ['bacterium', 'symbiont', 'endosymbiont']
+        if self.species_name not in bad_words:
+            print "HERE: if self.species_name not in bad_words: %s" % self.species_name
+        else:
+            print "else: %s" % self.species_name
+            
         if len(self.species_name) > 0:
-            return self.species_name[0].islower() and re.search('[^a-z]', self.species_name) == None
+            # return self.species_name[0].islower() and re.search('[^a-z]', self.species_name) == None and re.search('symbiont', self.species_name) == None 
+            return self.species_name[0].islower() and re.search('[^a-z-]', self.species_name) == None and self.species_name not in bad_words
         
     def good_gen(self):
         query = ""    
