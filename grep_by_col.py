@@ -58,11 +58,17 @@ def write_file(filename, to_write):
         
         
 if __name__ == '__main__':
-
-    list_to_take_out_name      = sys.argv[1].strip()
-    file_to_take_out_from_name = sys.argv[2].strip()
-    output_file_name           = file_to_take_out_from_name + ".out.csv"
-    deleted_val_file_name      = file_to_take_out_from_name + ".del.csv"
+    try:
+        list_to_take_out_name      = sys.argv[1].strip()
+        file_to_take_out_from_name = sys.argv[2].strip()
+        file_to_take_out_from_name = sys.argv[3].strip()
+        file_to_take_out_from_name = sys.argv[4].strip()
+        output_file_name           = file_to_take_out_from_name + ".out.csv"
+        deleted_val_file_name      = file_to_take_out_from_name + ".del.csv"
+    except:
+        print "Arguments error: ", sys.argv
+        print "Unexpected error:", sys.exc_info()[0]
+        raise
     
     output_val                 = []
     deleted_val_fil            = []
@@ -75,8 +81,6 @@ if __name__ == '__main__':
         try:
             genus_name = line.split(",")[3].strip()  
             if genus_name in list_to_take_out:
-                # print "YES if genus_name in list_to_take_out:"
-                # print genus_name
                 deleted_val_fil.append(line)
             else:
                 output_val.append(line)
