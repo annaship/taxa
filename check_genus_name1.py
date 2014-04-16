@@ -44,10 +44,10 @@ class Entry:
         
     def is_species(self):
         bad_words = ['bacterium', 'symbiont', 'endosymbiont']
-        if self.species_name not in bad_words:
-            print "HERE: if self.species_name not in bad_words: %s" % self.species_name
-        else:
-            print "else: %s" % self.species_name
+        # if self.species_name not in bad_words:
+        #     print "HERE: if self.species_name not in bad_words: %s" % self.species_name
+        # else:
+        #     print "else: %s" % self.species_name
             
         if len(self.species_name) > 0:
             # return self.species_name[0].islower() and re.search('[^a-z]', self.species_name) == None and re.search('symbiont', self.species_name) == None 
@@ -89,7 +89,7 @@ def print_check_species_into_csv(list_name, filename_base):
     f.write(list_name_str)
     f.close()
 
-fname                   = "id_mod_species_4-14-14.csv"
+fname                   = "id_mod_species_4-16-14.csv"
 add_species_file_name   = "add_species.sql"
 all_queries             = []
 all_to_check            = []
