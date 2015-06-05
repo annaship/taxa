@@ -349,14 +349,28 @@ class Taxonomy:
           raise
       return dict_out
       
+    def make_taxonomy_w_empty_ranks(self, tax_line):
+      new_line = ""
+      for name in self.ordered_names:
+        try:
+          if tax_line[name]:
+            new_line += (tax_line[name] + ";")
+        except KeyError:
+          new_line += ("empty_" + name + ";")
+        except:
+          raise       
+      return new_line
+      
     def make_taxonomy_w_good_ranks(self, dict_in, dict_out):
       for k, v in dict_in.items():
         clean_tax_line = self.separate_binomial_name(v)
         new_tax = self.make_new_taxonomy(clean_tax_line).strip(";")
+        my_tax = self.make_taxonomy_w_empty_ranks(clean_tax_line)
+        
         if len(new_tax.split(";")) == 7:
           dict_out[k] = new_tax
         elif len(new_tax.split(";")) > 0:
-          self.taxonomy[k] = new_tax
+          self.taxonomy[k] = my_tax
         else:
           self.classification_unknown.append(k)
       return dict_out
@@ -385,10 +399,10 @@ class Taxonomy:
         self.make_gna_result_dict_by_key('species', self.ncbi_classification, self.ncbi_classification_by_sp) 
         ncbi_tax_ok = self.make_taxonomy_w_good_ranks(self.ncbi_classification_by_sp, self.ncbi_classification_by_sp_good)    
         # self.print_w_div(ncbi_tax_ok.items())
-          
-        # print "=====000"
-        # print self.taxonomy
-        # print "=====111"
+        #
+        print "=====000"
+        print self.taxonomy
+        print "=====111"
         self.write_list_to_file(self.classification_unknown, self.classification_unknown_file_name, 'a')      
         self.write_list_to_file(self.taxonomy.values(), "genus_taxonomy.txt", 'a')      
         
