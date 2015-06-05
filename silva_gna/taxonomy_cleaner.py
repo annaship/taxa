@@ -61,6 +61,7 @@ class Taxonomy:
         self.ncbi_classification_by_sp = {}
         self.ncbi_classification_by_sp_good = {}
         self.classification_unknown    = []
+        self.taxonomy                  = {}
         
 
     def uniq_array(self, arr):
@@ -337,8 +338,6 @@ class Taxonomy:
       return end_rank
       
     def make_gna_result_dict_by_key(self, key, dict_in, dict_out):
-      print "key = %s" % key
-            
       for n in dict_in:
         try:
           key = self.get_next_available_rank(n)
@@ -356,6 +355,8 @@ class Taxonomy:
         new_tax = self.make_new_taxonomy(clean_tax_line).strip(";")
         if len(new_tax.split(";")) == 7:
           dict_out[k] = new_tax
+        elif len(new_tax.split(";")) > 0:
+          self.taxonomy[k] = new_tax
         else:
           self.classification_unknown.append(k)
       return dict_out
@@ -369,22 +370,28 @@ class Taxonomy:
       for line in list_name:
         file_open.write("%s\n" % (line))
       file_open.close()
+      
+    def print_w_div(self, dict_in, div = "#"):
+        try:
+          for k, v in dict_in:
+            print "%s%s%s" % (k, div, v)
+        except:
+          pass
     
     def make_clean_taxonomy_from_partial(self, json_res_file_name):
         self.parse_json(json_res_file_name)        
         self.make_list_from_json()
                 
         self.make_gna_result_dict_by_key('species', self.ncbi_classification, self.ncbi_classification_by_sp) 
-        print "DDD self.ncbi_classification_by_sp"
-        print self.ncbi_classification_by_sp       
         ncbi_tax_ok = self.make_taxonomy_w_good_ranks(self.ncbi_classification_by_sp, self.ncbi_classification_by_sp_good)    
-        try:
-          for k, v in ncbi_tax_ok.items():
-            print "%s#%s" % (k, v)
-        except:
-          pass
+        # self.print_w_div(ncbi_tax_ok.items())
           
+        # print "=====000"
+        # print self.taxonomy
+        # print "=====111"
         self.write_list_to_file(self.classification_unknown, self.classification_unknown_file_name, 'a')      
+        self.write_list_to_file(self.taxonomy.values(), "genus_taxonomy.txt", 'a')      
+        
 
     def write_dict_to_file(self, file_name, dict_name, to_add = 'w'):
         file_open = open(file_name, to_add)
@@ -398,7 +405,6 @@ class Taxonomy:
       
         for k, v in self.old_taxonomy_weird_by_species.items():
           new_tax = self.make_new_taxonomy(v).strip(";")        
-          # print "%s#%s" % (k, new_tax)      
           the_file.write("%s#%s\n" % (k, new_tax))
     
     def get_good_silva(self, tax_infile_name):
