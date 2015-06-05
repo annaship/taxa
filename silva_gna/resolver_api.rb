@@ -25,8 +25,14 @@ require 'open-uri'
 
 file_name = ARGV[0]
 if File.exists?(file_name)
-    puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :data_source_ids => "4|11|5", :resolve_once => false, :preferred_data_sources => "4|11|5")
+    puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :data_source_ids => "4|11|5", :best_match_only => true)
 end
+
+# file_name = ARGV[0]
+# if File.exists?(file_name)
+#     puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :data_source_ids => "4|11|5", :resolve_once => false, :preferred_data_sources => "4|11|5", :best_match_only => true)
+# end
+
 # if File.exists?(file_name)
 #     puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :data_source_ids => "4", :resolve_once => true, :best_match_only => true)
 # end
