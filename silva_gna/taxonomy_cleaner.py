@@ -328,37 +328,26 @@ class Taxonomy:
           if data["is_known_name"] == False:
             self.classification_unknown.append(data["supplied_name_string"])
 
+    def get_next_available_rank(self, hey_of_ranks, end_rank = "species"):
+      for ordered_n in reversed(self.ordered_names):
+          if ordered_n in hey_of_ranks.keys():
+              return ordered_n
+          else:
+              continue
+      return end_rank
+      
     def make_gna_result_dict_by_key(self, key, dict_in, dict_out):
       print "key = %s" % key
-      
-      # if key self.ordered_names
-      
+            
       for n in dict_in:
         try:
-          print "n.keys() = %s" % n.keys()
-          print "NNN n"
-          print n
-
-          for ordered_n in reversed(self.ordered_names):
-              print "OOO ordered_n"
-              print ordered_n
-              if ordered_n in n.keys():
-                  key = ordered_n
-                  break
-              else:
-                  continue
-
-          print "UUU1 key"
-          print key
-            
+          key = self.get_next_available_rank(n)
           dict_out[n[key]] = n
         except KeyError:
           pass
         except:
           print "Unexpected error:", sys.exc_info()[0]
           raise
-      print "DDD1 dict_out"
-      print dict_out
       return dict_out
       
     def make_taxonomy_w_good_ranks(self, dict_in, dict_out):
