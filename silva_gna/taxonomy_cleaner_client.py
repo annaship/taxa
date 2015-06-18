@@ -12,10 +12,11 @@
 import argparse
 from taxonomy_cleaner import Taxonomy
 
-usage = "usage: %prog [options] arg1"
-parser = argparse.ArgumentParser(description='ref fasta/tax file creator')
+# usage = "usage: %prog [options] arg1, for example: %prog -p -j file_name"
+parser = argparse.ArgumentParser(usage='%(prog)s [options], for example: %(prog)s -p -j file_name', description='Works with names, cleans taxonomy')
+
 parser.add_argument('-b', '--get_list_before_binomial', action="count", default=0, help = 'Run get_list_before_binomial')
-parser.add_argument('-f', '--make_clean_taxonomy_from_gna_api_res_preff', action="count", default=0, help = 'Run make_clean_taxonomy_from_gna_api_res_preff (using resolver\'s result in json, :preferred_data_sources => "4, 11, 5", e.g. NCBI, GBIF and Index Fungorum) - doesn\'t work')
+parser.add_argument('-f', '--make_clean_taxonomy_from_gna_api_res_preff', action="count", default=0, help = 'Run make_clean_taxonomy_from_gna_api_res_preff (using resolver\'s result in json, :preferred_data_sources => "4|11|5", e.g. NCBI, GBIF and Index Fungorum) - doesn\'t work')
 
 parser.add_argument('-j', dest = "json_res", help = 'GNA result file in json format, e.g. small_names_list_gna_result.json')
 
@@ -23,13 +24,11 @@ parser.add_argument('-i', '--tax_in', dest = "tax_infile",
       help = 'Tab delimited taxonomy input file: 10437\t"Bacteria;Actinobacteria;Actinobacteria;Micromonosporales;Micromonosporaceae;Micromonospora;Micromonospora stanfordense"')
 
 parser.add_argument('-g', '--get_good_silva', action="count", default=0, help = 'Run get_good_silva')
-# ./taxonomy_cleaner_client.py
-# args.get_good_silva = 0
-# ./taxonomy_cleaner_client.py -g
-# args.get_good_silva = 1
 parser.add_argument('-l', '--get_list_of_good_binomials', action="count", default=0, help = 'Run get_list_of_good_binomials')
 
 parser.add_argument('-p', '--make_clean_taxonomy_from_partial', action="count", default=0, help = 'Run make_clean_taxonomy_from_partial (using resolver\'s result in json)')
+
+parser.add_argument('-r', '--get_list_last_good', action="count", default=0, help = 'Run get_list_last_good on the rest of taxa')
 
 parser.add_argument('-u', '--get_list_before_uncultured', action="count", default=0, help = 'Run get_list_before_uncultured')
 
