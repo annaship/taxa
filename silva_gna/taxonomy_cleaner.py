@@ -400,14 +400,15 @@ class Taxonomy:
         ncbi_tax_ok = self.make_taxonomy_w_good_ranks(self.ncbi_classification_by_sp, self.ncbi_classification_by_sp_good)    
         # self.print_w_div(ncbi_tax_ok.items())
         #
-        print "=====000"
-        print self.taxonomy
-        print "=====111"
+        # print "=====000"
+        # print self.taxonomy
+        # print "=====111"
+        self.write_dict_to_file(self.taxonomy, "genus_taxonomy_dict.txt", 'a')
         self.write_list_to_file(self.classification_unknown, self.classification_unknown_file_name, 'a')      
         self.write_list_to_file(self.taxonomy.values(), "genus_taxonomy.txt", 'a')      
         
 
-    def write_dict_to_file(self, file_name, dict_name, to_add = 'w'):
+    def write_dict_to_file(self, dict_name, file_name, to_add = 'w'):
         file_open = open(file_name, to_add)
         for tax_id, tax_line in dict_name.items():
             # file_open.write('%s, "%s"\n' % (tax_id, tax_line))
@@ -559,6 +560,13 @@ class Taxonomy:
       print "PPP the_rest 23282"
       print len(the_rest)
       self.write_dict_to_file("binomial_the_rest.txt", the_rest)
+      
+    def get_list_last_good(self, tax_infile_name):
+        last_good_dict_by_id = {}
+        for line in open(tax_infile_name):
+          split_tax, id_tax = self.clean_tsv_line(line)
+          print "split_tax = %s, id_tax = %s" % (split_tax, id_tax)
+        
       
 
     def get_list_before_uncultured(self, tax_infile_name):
