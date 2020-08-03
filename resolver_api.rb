@@ -1,10 +1,7 @@
 #!/usr/bin/env ruby
 # file with names separated by newline as an argument
 require 'rest-client'
-require 'open-uri'
-
-# puts RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names=Plantago major&resolve_once=false&data_source_ids=1|3"))
-
+require 'uri'
 
 # puts "GET request\n"
 # puts RestClient.get(URI.escape("http://resolver.globalnames.org/name_resolvers.json?names=Plantago major|Monohamus galloprovincialis|Felis concolor&resolve_once=false&data_source_ids=1|3"))
@@ -20,22 +17,11 @@ require 'open-uri'
 #     puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new("names_list.txt", "r:utf-8"), :resolve_once => false, :data_source_ids => "1")
 # end
 
-# 4	NCBI
-# 11  GBIF Backbone Taxonomy
-
 file_name = ARGV[0]
+# file_name = "newbpcdb2_phylum_3-3-14.csv"
 if File.exists?(file_name)
-    puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :data_source_ids => "4", :best_match_only => true)
+    # puts "\n\nPOST request with an uploaded file\n"
+    # puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "xml", :file =>File.new(file_name), :resolve_once => false, :data_source_ids => "1|4")
+    # NCBI only
+    puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :resolve_once => false, :data_source_ids => "4|1|5|8|9|11")
 end
-
-# file_name = ARGV[0]
-# if File.exists?(file_name)
-#     puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :data_source_ids => "4|11|5", :resolve_once => false, :preferred_data_sources => "4|11|5", :best_match_only => true)
-# end
-
-# if File.exists?(file_name)
-#     puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :data_source_ids => "4", :resolve_once => true, :best_match_only => true)
-# end
-# , :best_match_only => true
-
-# puts RestClient.post(URI.escape("http://resolver.globalnames.org/name_resolvers"), :format => "json", :file =>File.new(file_name), :resolve_once => false, :data_source_ids => "4|1|5|8|9|11")
